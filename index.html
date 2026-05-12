@@ -3,1065 +3,1471 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Document Changer — All-in-One File Converter</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<title>DocumentChanger — Free PDF, Image & Document Tools</title>
+<meta name="description" content="Free online PDF tools, image compressor, resume builder. 100% private, browser-based. No sign-up needed.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#06060e;--bg2:#0d0d1a;--bg3:#121220;
-  --surface:#161626;--surface2:#1c1c2e;--surface3:#222236;
-  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
-  --text:#eeeef8;--text2:#8888aa;--text3:#44445a;
-  --a1:#6c63ff;--a2:#ff4d8d;--a3:#00e5b0;--a4:#ffb347;
-  --success:#00e5b0;--danger:#ff3e5c;
-  --r:14px;--r2:20px;
+  --red:#E8192C;--red-dk:#c8001b;--red-lt:#fff1f2;--red-mid:#ffd6d9;
+  --blue:#1565C0;--green:#1B5E20;--orange:#E65100;
+  --bg:#F5F6FA;--white:#ffffff;
+  --txt:#1a1a2e;--txt2:#4a4a6a;--txt3:#8888aa;
+  --bdr:#E0E0F0;--bdr2:#EBEBF5;
+  --sh:0 1px 4px rgba(0,0,0,.08);
+  --shm:0 4px 16px rgba(0,0,0,.1);
+  --shl:0 8px 32px rgba(0,0,0,.12);
+  --nav-h:62px;
 }
 html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;cursor:none}
-
-/* CURSOR */
-#cursor{position:fixed;width:12px;height:12px;border-radius:50%;background:var(--a1);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform .1s,width .2s,height .2s,background .2s;mix-blend-mode:screen}
-#cursor-ring{position:fixed;width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(108,99,255,.5);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .15s ease}
-body:has(a:hover) #cursor,body:has(button:hover) #cursor,body:has(.tool-card:hover) #cursor{width:20px;height:20px;background:var(--a2)}
-body:has(a:hover) #cursor-ring,body:has(button:hover) #cursor-ring,body:has(.tool-card:hover) #cursor-ring{width:50px;height:50px;border-color:rgba(255,77,141,.4)}
-
-/* NOISE OVERLAY */
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  opacity:.4}
-
-/* SCROLLBAR */
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);overflow-x:hidden;font-size:14px;line-height:1.6}
+a{text-decoration:none;color:inherit}
+button,input,select,textarea{font-family:'Inter',sans-serif}
 ::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px}
+::-webkit-scrollbar-track{background:#f1f1f1}
+::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
 
-/* ─── NAVBAR ─── */
+/* ── NAV ── */
 .nav{
-  position:fixed;top:0;left:0;right:0;z-index:500;
-  height:68px;display:flex;align-items:center;justify-content:space-between;
-  padding:0 max(2rem, 5vw);
-  background:rgba(6,6,14,.8);backdrop-filter:blur(24px) saturate(1.5);
-  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:900;
+  background:var(--white);
+  border-bottom:1px solid var(--bdr);
+  height:var(--nav-h);
+  display:flex;align-items:center;
+  padding:0 20px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
 }
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-.logo-mark{width:34px;height:34px;border-radius:10px;
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  display:flex;align-items:center;justify-content:center;font-size:18px}
-.logo-text{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;
-  background:linear-gradient(90deg,#fff,var(--text2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.nav-right{display:flex;align-items:center;gap:12px}
-.nav-pill{font-size:.78rem;padding:6px 14px;border-radius:20px;
-  border:1px solid var(--border2);color:var(--text2);letter-spacing:.3px}
-.nav-pill.live{border-color:rgba(0,229,176,.3);color:var(--a3);
-  background:rgba(0,229,176,.06);display:flex;align-items:center;gap:6px}
-.nav-pill.live::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--a3);
-  animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,229,176,.4)}50%{opacity:.8;box-shadow:0 0 0 6px rgba(0,229,176,0)}}
+.nav-logo{display:flex;align-items:center;gap:10px;cursor:pointer;flex-shrink:0;margin-right:28px}
+.nav-logo-icon{
+  width:36px;height:36px;border-radius:8px;
+  background:var(--red);
+  display:flex;align-items:center;justify-content:center;
+}
+.nav-logo-icon svg{width:20px;height:20px;fill:white}
+.nav-logo-text{font-family:'Manrope',sans-serif;font-size:1.18rem;font-weight:800;color:var(--txt);letter-spacing:-.4px}
+.nav-logo-text span{color:var(--red)}
 
-/* ─── HERO ─── */
+.nav-links{display:flex;height:var(--nav-h);overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;flex:1}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-link{
+  display:flex;align-items:center;gap:6px;
+  padding:0 16px;height:100%;
+  font-size:.82rem;font-weight:600;color:var(--txt2);
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+  border-bottom:2.5px solid transparent;
+  transition:color .15s,border-color .15s;
+  position:relative;
+}
+.nav-link:hover{color:var(--red)}
+.nav-link.active{color:var(--red);border-bottom-color:var(--red)}
+.nav-link-ico{font-size:15px}
+
+/* Dropdown */
+.nav-link.has-drop{padding-right:22px}
+.nav-link.has-drop::after{content:'▾';position:absolute;right:8px;font-size:10px;top:50%;transform:translateY(-50%)}
+.nav-drop{
+  position:absolute;top:calc(var(--nav-h) - 1px);left:0;
+  background:var(--white);border:1px solid var(--bdr);border-radius:10px;
+  box-shadow:var(--shl);padding:8px 0;min-width:200px;z-index:1000;
+  display:none;flex-direction:column;
+}
+.nav-link:hover .nav-drop{display:flex}
+.nav-drop-item{padding:9px 16px;font-size:.82rem;color:var(--txt2);cursor:pointer;transition:.15s;display:flex;align-items:center;gap:8px}
+.nav-drop-item:hover{background:var(--red-lt);color:var(--red)}
+
+.nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0;padding-left:12px}
+.btn-nav{padding:8px 18px;border-radius:7px;font-size:.8rem;font-weight:700;cursor:pointer;border:none;transition:.15s}
+.btn-nav.outline{background:transparent;border:1.5px solid var(--bdr);color:var(--txt2)}
+.btn-nav.outline:hover{border-color:var(--red);color:var(--red)}
+.btn-nav.solid{background:var(--red);color:#fff}
+.btn-nav.solid:hover{background:var(--red-dk);box-shadow:0 4px 12px rgba(232,25,44,.3)}
+
+/* ── PAGES ── */
+.page{display:none}.page.on{display:block}
+
+/* ── HERO ── */
 .hero{
-  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:68px 2rem 0;text-align:center;position:relative;overflow:hidden;
-}
-.hero-bg{
-  position:absolute;inset:0;z-index:0;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 50%,rgba(108,99,255,.12) 0%,transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 30%,rgba(255,77,141,.08) 0%,transparent 55%),
-    radial-gradient(ellipse 50% 40% at 50% 80%,rgba(0,229,176,.06) 0%,transparent 60%);
-}
-.hero-grid{
-  position:absolute;inset:0;z-index:0;
-  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
-  background-size:60px 60px;
-  mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,black 20%,transparent 100%);
-}
-.hero-content{position:relative;z-index:1;max-width:820px}
-.hero-eyebrow{
-  display:inline-flex;align-items:center;gap:8px;
-  font-size:.78rem;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--a1);
-  border:1px solid rgba(108,99,255,.25);border-radius:30px;padding:8px 18px;margin-bottom:2.5rem;
-  background:rgba(108,99,255,.06);
-  animation:fadeUp .8s ease both;
-}
-.hero-eyebrow svg{width:14px;height:14px}
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-.hero h1{
-  font-family:'Syne',sans-serif;font-size:clamp(3rem,7vw,5.5rem);
-  font-weight:800;line-height:1.0;letter-spacing:-2px;margin-bottom:1.5rem;
-  animation:fadeUp .8s .1s ease both;
-}
-.hero h1 .line2{
-  display:block;
-  background:linear-gradient(120deg,var(--a1) 0%,var(--a2) 40%,var(--a3) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;
-}
-.hero-sub{
-  font-size:1.15rem;color:var(--text2);line-height:1.75;max-width:520px;margin:0 auto 3rem;
-  animation:fadeUp .8s .2s ease both;
-}
-.hero-ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;animation:fadeUp .8s .3s ease both;margin-bottom:4rem}
-.btn-primary{
-  padding:14px 32px;border-radius:12px;border:none;cursor:pointer;
-  background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;
-  font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:.3px;
-  box-shadow:0 8px 32px rgba(108,99,255,.35);transition:all .25s;
-}
-.btn-primary:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(108,99,255,.45)}
-.btn-secondary{
-  padding:14px 32px;border-radius:12px;border:1px solid var(--border2);cursor:pointer;
-  background:rgba(255,255,255,.04);color:var(--text);
-  font-family:'Syne',sans-serif;font-size:.95rem;font-weight:600;
-  backdrop-filter:blur(8px);transition:all .25s;
-}
-.btn-secondary:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
-.hero-stats{
-  display:flex;gap:3rem;justify-content:center;flex-wrap:wrap;
-  padding-top:3rem;border-top:1px solid var(--border);
-  animation:fadeUp .8s .4s ease both;
-}
-.stat-item{text-align:center}
-.stat-num{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;
-  background:linear-gradient(135deg,#fff,var(--text2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.stat-label{font-size:.78rem;color:var(--text3);margin-top:4px;letter-spacing:.5px;text-transform:uppercase}
-
-/* SCROLL INDICATOR */
-.scroll-hint{
-  position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-  color:var(--text3);font-size:.75rem;letter-spacing:1px;text-transform:uppercase;
-  animation:fadeUp .8s .6s ease both;z-index:1;
-}
-.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,var(--a1),transparent);
-  animation:scrollLine 2s ease infinite}
-@keyframes scrollLine{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
-
-/* ─── SECTION WRAPPER ─── */
-.section{padding:5rem max(2rem,5vw);max-width:1200px;margin:0 auto}
-.section-head{margin-bottom:3rem}
-.section-tag{font-size:.72rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;
-  color:var(--a1);margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
-.section-tag::before{content:'';width:20px;height:2px;background:var(--a1);border-radius:2px}
-.section-title{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:800;
-  letter-spacing:-1px;margin-bottom:.75rem}
-.section-sub{font-size:1rem;color:var(--text2);max-width:520px;line-height:1.7}
-
-/* ─── TOOLS GRID ─── */
-.tools-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:2rem
-}
-.tool-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);
-  padding:1.6rem;cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);
+  background:linear-gradient(135deg,#fff 0%,#FFF5F6 40%,#F0F4FF 100%);
+  padding:56px 20px 48px;text-align:center;
+  border-bottom:1px solid var(--bdr2);
   position:relative;overflow:hidden;
 }
-.tool-card::after{
-  content:'';position:absolute;inset:0;border-radius:inherit;
-  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.06),transparent 60%);
-  opacity:0;transition:opacity .3s;pointer-events:none;
-}
-.tool-card:hover{border-color:var(--tc,var(--a1));transform:translateY(-4px);
-  box-shadow:0 20px 60px rgba(0,0,0,.4),0 0 0 1px var(--tc,var(--a1));}
-.tool-card:hover::after{opacity:1}
-.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.1rem}
-.card-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;
-  font-size:24px;background:var(--surface2);border:1px solid var(--border)}
-.card-badge{font-size:.68rem;padding:4px 9px;border-radius:6px;font-weight:700;letter-spacing:.5px;
-  background:rgba(255,77,141,.12);color:var(--a2);border:1px solid rgba(255,77,141,.2);text-transform:uppercase}
-.card-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;margin-bottom:.4rem}
-.card-desc{font-size:.82rem;color:var(--text2);line-height:1.55}
-.card-formats{display:flex;flex-wrap:wrap;gap:5px;margin-top:1rem}
-.fmt-pill{font-size:.68rem;padding:3px 8px;border-radius:5px;
-  background:var(--surface3);color:var(--text3);border:1px solid var(--border);font-weight:500}
-.card-arrow{position:absolute;bottom:1.4rem;right:1.4rem;width:28px;height:28px;border-radius:8px;
-  background:var(--surface2);display:flex;align-items:center;justify-content:center;
-  color:var(--text3);font-size:14px;transition:all .25s}
-.tool-card:hover .card-arrow{background:var(--tc,var(--a1));color:#fff;transform:translate(2px,-2px)}
-
-/* ─── WORKSPACE PANEL ─── */
-.workspace-overlay{
-  position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
-  display:none;align-items:flex-end;justify-content:center;padding:1rem;
-}
-.workspace-overlay.open{display:flex;animation:overlayIn .25s ease}
-@keyframes overlayIn{from{opacity:0}to{opacity:1}}
-.workspace-panel{
-  width:100%;max-width:700px;max-height:90vh;overflow-y:auto;
-  background:var(--bg3);border:1px solid var(--border2);border-radius:24px 24px 0 0;
-  padding:2rem;position:relative;
-  animation:panelUp .35s cubic-bezier(.4,0,.2,1);
-}
-@keyframes panelUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
-.panel-handle{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.5rem}
-.panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem}
-.panel-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800}
-.panel-close{width:36px;height:36px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);
-  cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);
-  font-size:20px;transition:.2s;line-height:1}
-.panel-close:hover{background:rgba(255,62,92,.15);border-color:var(--danger);color:var(--danger)}
-
-/* DROP ZONE */
-.dz{
-  border:1.5px dashed var(--border2);border-radius:16px;padding:2.5rem 1.5rem;text-align:center;
-  cursor:pointer;transition:all .25s;background:var(--bg2);position:relative;
-}
-.dz:hover,.dz.over{border-color:var(--a1);background:rgba(108,99,255,.06)}
-.dz-icon{font-size:2.8rem;margin-bottom:.8rem;display:block}
-.dz-title{font-weight:600;font-size:1rem;margin-bottom:.3rem}
-.dz-sub{font-size:.82rem;color:var(--text3)}
-.dz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-
-/* FILE CHIP */
-.file-chip{
-  display:none;align-items:center;gap:12px;
-  background:var(--surface2);border:1px solid var(--border);border-radius:12px;
-  padding:.9rem 1.1rem;margin-top:.75rem;
-}
-.file-chip.show{display:flex}
-.chip-ico{width:38px;height:38px;border-radius:9px;background:var(--surface3);
-  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.chip-info{flex:1;min-width:0}
-.chip-name{font-size:.88rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chip-size{font-size:.75rem;color:var(--text3);margin-top:2px}
-.chip-rm{width:26px;height:26px;border-radius:7px;border:none;cursor:pointer;
-  background:rgba(255,62,92,.1);color:var(--danger);font-size:15px;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s}
-.chip-rm:hover{background:rgba(255,62,92,.2)}
-
-/* OPTIONS */
-.opts{display:flex;flex-wrap:wrap;gap:12px;margin-top:1.25rem}
-.opt{flex:1;min-width:150px}
-.opt-lbl{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}
-select,input[type=number],input[type=text]{
-  width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;
-  padding:9px 13px;color:var(--text);font-size:.88rem;font-family:'DM Sans',sans-serif;
-  outline:none;transition:.2s;appearance:none;
-}
-select:focus,input:focus{border-color:var(--a1);box-shadow:0 0 0 3px rgba(108,99,255,.1)}
-
-/* MAIN CONVERT BUTTON */
-.cvt-btn{
-  width:100%;margin-top:1.5rem;padding:15px;border:none;border-radius:13px;
-  font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;
-  background:linear-gradient(135deg,var(--a1),var(--a2));
-  color:#fff;transition:all .25s;letter-spacing:.3px;position:relative;overflow:hidden;
-  box-shadow:0 6px 24px rgba(108,99,255,.3);
-}
-.cvt-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent,rgba(255,255,255,.15));
-  opacity:0;transition:.25s}
-.cvt-btn:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(108,99,255,.45)}
-.cvt-btn:hover::before{opacity:1}
-.cvt-btn:active{transform:translateY(0)}
-.cvt-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
-
-/* PROGRESS */
-.prog-wrap{display:none;margin-top:1rem}
-.prog-wrap.show{display:block}
-.prog-track{background:var(--surface3);border-radius:8px;height:7px;overflow:hidden}
-.prog-fill{height:7px;border-radius:8px;width:0;transition:width .4s ease;
-  background:linear-gradient(90deg,var(--a1),var(--a2),var(--a3))}
-.prog-lbl{font-size:.8rem;color:var(--text2);margin-top:.5rem;text-align:center}
-
-/* RESULT */
-.result{display:none;margin-top:1rem;text-align:center;
-  background:rgba(0,229,176,.05);border:1px solid rgba(0,229,176,.2);
-  border-radius:14px;padding:1.5rem;
-}
-.result.show{display:block;animation:fadeUp .3s ease}
-.result-ico{font-size:2.5rem;margin-bottom:.5rem}
-.result-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;color:var(--a3);margin-bottom:.3rem}
-.result-sub{font-size:.82rem;color:var(--text2);margin-bottom:1.1rem}
-.dl-btn{
-  display:inline-flex;align-items:center;gap:8px;padding:11px 26px;
-  border-radius:10px;background:var(--a3);color:#000;font-weight:700;font-size:.9rem;
-  text-decoration:none;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;
-  transition:.2s;
-}
-.dl-btn:hover{opacity:.85;transform:translateY(-1px)}
-
-/* TEXT AREAS */
-textarea{
-  width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:12px;
-  padding:1rem;color:var(--text);font-family:'DM Sans',sans-serif;
-  font-size:.9rem;resize:vertical;outline:none;line-height:1.65;transition:.2s;
-}
-textarea:focus{border-color:var(--a1);box-shadow:0 0 0 3px rgba(108,99,255,.1)}
-textarea.out{background:rgba(0,229,176,.04);border-color:rgba(0,229,176,.18);cursor:default}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:600px){.two-col{grid-template-columns:1fr}}
-.field-lbl{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}
-
-/* ACTION ROW BUTTONS */
-.action-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:1rem}
-.ac-btn{
-  padding:8px 16px;border-radius:9px;border:1px solid var(--border2);
-  background:var(--surface2);color:var(--text2);font-size:.82rem;cursor:pointer;
-  font-family:'DM Sans',sans-serif;transition:.2s;
-}
-.ac-btn:hover{background:var(--surface3);color:var(--text)}
-.ac-btn.active{background:var(--a1);border-color:var(--a1);color:#fff}
-
-/* STATS GRID */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:1rem}
-.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:11px;
-  padding:.9rem;text-align:center}
-.stat-val{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;
-  background:linear-gradient(135deg,var(--a1),var(--a3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.stat-key{font-size:.72rem;color:var(--text3);margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
-
-/* ─── FEATURES STRIP ─── */
-.features-strip{
-  padding:5rem max(2rem,5vw);
-  background:linear-gradient(135deg,rgba(108,99,255,.06),rgba(255,77,141,.03));
-  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-  margin:2rem 0;
-}
-.feat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:2rem;max-width:1100px;margin:0 auto}
-.feat-item{display:flex;gap:16px}
-.feat-ico{width:44px;height:44px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.feat-body h4{font-size:.95rem;font-weight:600;margin-bottom:.35rem}
-.feat-body p{font-size:.8rem;color:var(--text3);line-height:1.55}
-
-/* ─── TOAST ─── */
-.toast{
-  position:fixed;bottom:2.5rem;right:2rem;z-index:900;
-  display:flex;align-items:center;gap:12px;
-  background:var(--surface);border:1px solid var(--border2);border-radius:14px;
-  padding:1rem 1.4rem;max-width:320px;
-  box-shadow:0 16px 48px rgba(0,0,0,.5);
-  transform:translateY(100px) scale(.9);opacity:0;transition:all .35s cubic-bezier(.4,0,.2,1);
+.hero::before{
+  content:'';position:absolute;top:-80px;right:-80px;width:380px;height:380px;
+  border-radius:50%;background:radial-gradient(circle,rgba(232,25,44,.06),transparent 70%);
   pointer-events:none;
 }
-.toast.show{transform:translateY(0) scale(1);opacity:1}
-.toast-ico{font-size:20px}
-.toast-msg{font-size:.87rem;color:var(--text)}
-
-/* ─── FOOTER ─── */
-footer{padding:3rem max(2rem,5vw);border-top:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
-.foot-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;
-  background:linear-gradient(90deg,var(--a1),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.foot-note{font-size:.8rem;color:var(--text3)}
-.foot-links{display:flex;gap:1.5rem}
-.foot-links a{font-size:.82rem;color:var(--text3);text-decoration:none;transition:.2s}
-.foot-links a:hover{color:var(--text)}
-
-/* ─── MISC ─── */
-.divider{height:1px;background:var(--border);margin:1.5rem 0}
-.copy-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:9px;
-  background:var(--a1);border:none;color:#fff;font-size:.85rem;font-weight:600;cursor:pointer;
-  font-family:'DM Sans',sans-serif;transition:.2s;margin-top:.75rem}
-.copy-btn:hover{opacity:.85}
-
-@media(max-width:768px){
-  .hero h1{font-size:2.8rem;letter-spacing:-1px}
-  .hero-stats{gap:2rem}
-  .workspace-panel{padding:1.5rem;border-radius:20px 20px 0 0}
-  .tools-grid{grid-template-columns:1fr 1fr}
-  footer{flex-direction:column;text-align:center}
+.hero::after{
+  content:'';position:absolute;bottom:-60px;left:-60px;width:280px;height:280px;
+  border-radius:50%;background:radial-gradient(circle,rgba(21,101,192,.05),transparent 70%);
+  pointer-events:none;
 }
-@media(max-width:480px){.tools-grid{grid-template-columns:1fr}}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--red-lt);color:var(--red);
+  font-size:.7rem;font-weight:700;padding:5px 14px;
+  border-radius:20px;border:1px solid var(--red-mid);
+  margin-bottom:18px;letter-spacing:.5px;text-transform:uppercase;
+}
+.hero h1{
+  font-family:'Manrope',sans-serif;
+  font-size:clamp(2rem,4.5vw,3.2rem);
+  font-weight:800;letter-spacing:-.8px;line-height:1.1;margin-bottom:14px;color:var(--txt);
+}
+.hero h1 em{color:var(--red);font-style:normal}
+.hero-sub{font-size:1rem;color:var(--txt2);max-width:480px;margin:0 auto 28px;line-height:1.75}
+.search-bar{
+  max-width:520px;margin:0 auto 32px;
+  display:flex;background:white;
+  border:1.5px solid var(--bdr);border-radius:10px;
+  box-shadow:var(--shm);overflow:hidden;
+}
+.search-bar input{flex:1;padding:13px 16px;border:none;outline:none;font-size:.9rem;color:var(--txt)}
+.search-bar input::placeholder{color:var(--txt3)}
+.search-bar button{
+  padding:12px 22px;background:var(--red);color:white;border:none;
+  cursor:pointer;font-weight:700;font-size:.84rem;transition:.15s;white-space:nowrap;
+}
+.search-bar button:hover{background:var(--red-dk)}
+.hero-stats{display:flex;justify-content:center;gap:40px;flex-wrap:wrap}
+.hstat strong{display:block;font-size:1.6rem;font-weight:800;color:var(--txt);font-family:'Manrope',sans-serif}
+.hstat span{font-size:.7rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px}
+
+/* ── CAT TABS ── */
+.cat-bar{background:white;border-bottom:1px solid var(--bdr2);overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
+.cat-bar::-webkit-scrollbar{display:none}
+.cat-bar-in{display:flex;max-width:1160px;margin:0 auto;padding:0 20px}
+.ctab{
+  display:flex;align-items:center;gap:7px;
+  padding:13px 20px;font-size:.79rem;font-weight:600;color:var(--txt2);
+  cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;
+  flex-shrink:0;transition:.15s;
+}
+.ctab:hover{color:var(--red)}
+.ctab.on{color:var(--red);border-bottom-color:var(--red)}
+.cdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ── TOOLS AREA ── */
+.tools-wrap{max-width:1160px;margin:0 auto;padding:32px 20px}
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sec-title{font-family:'Manrope',sans-serif;font-size:1rem;font-weight:700;display:flex;align-items:center;gap:9px}
+.sec-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.see-all{font-size:.77rem;font-weight:600;color:var(--red);cursor:pointer;transition:.1s}
+.see-all:hover{text-decoration:underline}
+
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-bottom:8px}
+.tcard{
+  background:white;border:1px solid var(--bdr2);border-radius:12px;
+  padding:18px 13px 14px;cursor:pointer;
+  transition:border-color .18s,box-shadow .18s,transform .18s;
+  text-align:center;position:relative;
+}
+.tcard:hover{border-color:var(--card-c,var(--red));box-shadow:var(--shm);transform:translateY(-2px)}
+.tcard-ico{width:44px;height:44px;border-radius:11px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.tcard-name{font-size:.77rem;font-weight:700;margin-bottom:3px;line-height:1.3;color:var(--txt)}
+.tcard-desc{font-size:.67rem;color:var(--txt3);line-height:1.4}
+.tcard-hot{position:absolute;top:8px;right:8px;font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:4px;background:var(--red);color:white;text-transform:uppercase;letter-spacing:.3px}
+
+/* ── PAGE HEADER (PDF/IMG etc) ── */
+.page-hd{background:white;border-bottom:1px solid var(--bdr2);padding:28px 20px 0}
+.page-hd-in{max-width:1160px;margin:0 auto}
+.page-title-row{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.page-title-ico{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.page-title{font-family:'Manrope',sans-serif;font-size:1.55rem;font-weight:800;letter-spacing:-.4px}
+.page-subtitle{font-size:.83rem;color:var(--txt2);margin-top:2px}
+.page-tabs{display:flex;gap:0;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
+.page-tabs::-webkit-scrollbar{display:none}
+.ptab{padding:10px 18px;font-size:.78rem;font-weight:600;color:var(--txt2);cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:.15s}
+.ptab:hover{color:var(--red)}
+.ptab.on{color:var(--red);border-bottom-color:var(--red)}
+
+/* ── BIG GRID ── */
+.big-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:13px}
+.bcard{
+  background:white;border:1px solid var(--bdr2);border-radius:12px;
+  padding:22px 14px 16px;cursor:pointer;
+  transition:border-color .18s,box-shadow .18s,transform .18s;text-align:center;
+}
+.bcard:hover{border-color:var(--bc,var(--red));box-shadow:var(--shm);transform:translateY(-2px)}
+.bcard-ico{width:52px;height:52px;border-radius:13px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:23px}
+.bcard-name{font-size:.85rem;font-weight:700;margin-bottom:4px;color:var(--txt)}
+.bcard-desc{font-size:.72rem;color:var(--txt3);line-height:1.5}
+.bcard-link{display:inline-flex;align-items:center;gap:4px;margin-top:11px;font-size:.72rem;font-weight:600;color:var(--red)}
+
+/* ── AD SLOT ── */
+.ad{
+  background:white;border:1.5px dashed #dde;border-radius:10px;
+  text-align:center;padding:16px;color:var(--txt3);font-size:.73rem;margin:20px 0;
+}
+.ad strong{display:block;font-size:.66rem;font-weight:700;margin-bottom:3px;letter-spacing:.5px;text-transform:uppercase;color:#bbc}
+
+/* ── TOOL WORKER MODAL ── */
+.wk-overlay{
+  position:fixed;inset:0;z-index:800;background:rgba(15,15,30,.55);
+  backdrop-filter:blur(6px);
+  display:none;align-items:flex-start;justify-content:center;
+  padding:20px;overflow-y:auto;
+}
+.wk-overlay.on{display:flex;animation:fdIn .2s}
+@keyframes fdIn{from{opacity:0}to{opacity:1}}
+.wk-box{
+  background:white;border-radius:16px;width:100%;max-width:640px;
+  margin:auto;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.2);
+  animation:slideDown .25s ease;
+}
+@keyframes slideDown{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.wk-head{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--bdr2)}
+.wk-head-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.wk-head-info{flex:1;min-width:0}
+.wk-head-title{font-size:.95rem;font-weight:700;color:var(--txt)}
+.wk-head-sub{font-size:.72rem;color:var(--txt3)}
+.wk-close{
+  width:30px;height:30px;border-radius:7px;border:1px solid var(--bdr);
+  background:none;cursor:pointer;font-size:16px;color:var(--txt2);
+  display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0;
+}
+.wk-close:hover{background:#fef2f2;color:var(--red);border-color:var(--red-mid)}
+.wk-body{padding:22px}
+
+/* ── DROP ZONE ── */
+.dz{
+  border:2px dashed var(--bdr);border-radius:12px;padding:28px 14px;
+  text-align:center;cursor:pointer;transition:.18s;background:#fafbfc;position:relative;
+}
+.dz:hover,.dz.ov{border-color:var(--red);background:var(--red-lt)}
+.dz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-ico{font-size:2.2rem;margin-bottom:8px;display:block}
+.dz-ttl{font-weight:700;font-size:.88rem;margin-bottom:3px;color:var(--txt)}
+.dz-sub{font-size:.75rem;color:var(--txt2)}
+.dz-btn{display:inline-block;margin-top:12px;padding:8px 20px;background:var(--red);color:white;border-radius:7px;font-size:.8rem;font-weight:700;pointer-events:none}
+
+/* FILE CHIP */
+.fchip{display:none;align-items:center;gap:10px;background:#f8f9fb;border:1px solid var(--bdr);border-radius:9px;padding:10px 12px;margin-top:8px}
+.fchip.on{display:flex}
+.fchip-ico{width:34px;height:34px;border-radius:7px;background:var(--red-lt);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.fchip-info{flex:1;min-width:0}
+.fchip-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt)}
+.fchip-sz{font-size:.7rem;color:var(--txt3)}
+.fchip-rm{width:24px;height:24px;border-radius:5px;border:none;cursor:pointer;background:#fee2e2;color:#b91c1c;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0}
+.fchip-rm:hover{background:#fecaca}
+
+/* OPTIONS */
+.opts{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.opt{flex:1;min-width:130px}
+.opt-label{font-size:.68rem;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+select,.oi{width:100%;padding:9px 12px;border:1.5px solid var(--bdr);border-radius:8px;font-size:.84rem;background:white;color:var(--txt);outline:none;transition:.15s;appearance:none}
+select:focus,.oi:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,25,44,.08)}
+
+/* CONVERT BTN */
+.cvbtn{
+  width:100%;margin-top:18px;padding:13px;border:none;border-radius:9px;
+  background:var(--red);color:white;font-size:.9rem;font-weight:700;
+  cursor:pointer;transition:.18s;letter-spacing:.2px;
+}
+.cvbtn:hover{background:var(--red-dk);box-shadow:0 6px 18px rgba(232,25,44,.3)}
+.cvbtn:disabled{opacity:.45;cursor:not-allowed}
+
+/* PROGRESS */
+.prog{display:none;margin-top:14px}
+.prog.on{display:block}
+.prog-track{height:6px;background:#f0f0f5;border-radius:4px;overflow:hidden}
+.prog-fill{height:6px;background:linear-gradient(90deg,var(--red),#ff7070);border-radius:4px;width:0;transition:width .3s}
+.prog-lbl{font-size:.77rem;color:var(--txt2);margin-top:7px;text-align:center}
+
+/* RESULT */
+.res{display:none;margin-top:14px;text-align:center;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:11px;padding:18px}
+.res.on{display:block;animation:fdIn .3s}
+.res-ico{font-size:2rem;margin-bottom:6px}
+.res-title{font-weight:700;font-size:.9rem;color:#16a34a;margin-bottom:3px}
+.res-sub{font-size:.77rem;color:var(--txt2);margin-bottom:12px}
+.dlbtn{display:inline-flex;align-items:center;gap:7px;padding:9px 22px;background:#16a34a;color:white;border-radius:8px;font-weight:700;font-size:.84rem;border:none;cursor:pointer;transition:.15s}
+.dlbtn:hover{opacity:.88;transform:translateY(-1px)}
+
+/* TEXT */
+textarea{width:100%;padding:11px;border:1.5px solid var(--bdr);border-radius:9px;font-size:.85rem;resize:vertical;outline:none;transition:.15s;background:white;color:var(--txt)}
+textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,25,44,.07)}
+.out-ta{background:#f8f9fb;border-color:var(--bdr2)}
+.note-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 13px;font-size:.78rem;color:#92400e;margin-top:11px}
+.note-blue{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 13px;font-size:.78rem;color:#1e40af;margin-top:11px}
+.divider{height:1px;background:var(--bdr2);margin:16px 0}
+.flbl{font-size:.68rem;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.copy-row{display:flex;gap:7px;margin-top:8px;justify-content:flex-end}
+.cpbtn{padding:7px 13px;border-radius:6px;border:1px solid var(--bdr);background:white;font-size:.77rem;font-weight:600;cursor:pointer;transition:.15s;color:var(--txt2)}
+.cpbtn:hover{border-color:var(--blue);color:var(--blue)}
+.pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+.pill{padding:6px 14px;border-radius:20px;border:1.5px solid var(--bdr);background:white;font-size:.77rem;font-weight:600;cursor:pointer;transition:.15s;color:var(--txt2)}
+.pill:hover{border-color:var(--red);color:var(--red)}
+.pill.on{border-color:var(--red);background:var(--red);color:white}
+.wc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.wc-card{background:#f8f9fb;border:1px solid var(--bdr2);border-radius:9px;padding:12px;text-align:center}
+.wc-val{font-size:1.3rem;font-weight:800;color:var(--red);font-family:'Manrope',sans-serif}
+.wc-key{font-size:.68rem;color:var(--txt3);margin-top:2px;text-transform:uppercase;letter-spacing:.3px}
+
+/* ── RESUME PAGE ── */
+.resume-hero{
+  background:linear-gradient(135deg,#1a1a3e,#2d1b4e);
+  color:white;padding:52px 20px;text-align:center;
+}
+.resume-hero h1{font-family:'Manrope',sans-serif;font-size:2rem;font-weight:800;margin-bottom:10px}
+.resume-hero p{font-size:.92rem;opacity:.75;max-width:420px;margin:0 auto 24px;line-height:1.7}
+.rbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.rbtn-p{padding:11px 26px;background:var(--red);color:white;border-radius:8px;font-weight:700;font-size:.86rem;border:none;cursor:pointer;transition:.15s}
+.rbtn-p:hover{background:var(--red-dk)}
+.rbtn-o{padding:11px 26px;background:rgba(255,255,255,.1);color:white;border-radius:8px;font-weight:700;font-size:.86rem;border:1px solid rgba(255,255,255,.25);cursor:pointer;transition:.15s}
+.rbtn-o:hover{background:rgba(255,255,255,.18)}
+.tmpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}
+.tmpl-card{background:white;border:2px solid var(--bdr2);border-radius:12px;overflow:hidden;cursor:pointer;transition:.18s}
+.tmpl-card:hover{border-color:var(--red);box-shadow:var(--shm);transform:translateY(-2px)}
+.tmpl-prev{height:160px;display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;background:#f8f9fb}
+.tmpl-ov{position:absolute;inset:0;background:rgba(232,25,44,.88);display:flex;align-items:center;justify-content:center;opacity:0;transition:.18s;font-size:.82rem;font-weight:700;color:white}
+.tmpl-card:hover .tmpl-ov{opacity:1}
+.tmpl-info{padding:11px}
+.tmpl-name{font-weight:700;font-size:.83rem;margin-bottom:2px}
+.tmpl-tag{font-size:.69rem;color:var(--txt3)}
+.form-sec{background:white;border:1px solid var(--bdr2);border-radius:11px;padding:18px;margin-bottom:13px}
+.form-sec-title{font-size:.85rem;font-weight:700;margin-bottom:13px;display:flex;align-items:center;gap:7px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:9px}
+.fgrp{margin-bottom:9px}
+.flb{font-size:.68rem;font-weight:700;color:var(--txt2);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.3px}
+.finp{width:100%;padding:8px 11px;border:1.5px solid var(--bdr);border-radius:7px;font-size:.84rem;outline:none;transition:.15s}
+.finp:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,25,44,.07)}
+.fta{width:100%;padding:9px 11px;border:1.5px solid var(--bdr);border-radius:7px;font-size:.84rem;outline:none;resize:vertical;min-height:68px;transition:.15s}
+.fta:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,25,44,.07)}
+.add-btn{display:flex;align-items:center;gap:5px;font-size:.77rem;font-weight:600;color:var(--blue);cursor:pointer;padding:5px 0;border:none;background:none;transition:.15s}
+.add-btn:hover{color:var(--red)}
+.gen-btn{width:100%;padding:13px;background:var(--red);color:white;border:none;border-radius:9px;font-size:.92rem;font-weight:700;cursor:pointer;transition:.15s;margin-top:14px}
+.gen-btn:hover{background:var(--red-dk)}
+@media(max-width:580px){.frow{grid-template-columns:1fr}}
+
+/* ── AI ASSISTANT ── */
+.ai-wrap{max-width:800px;margin:0 auto;padding:36px 20px}
+.ai-header{text-align:center;margin-bottom:24px}
+.ai-badge{display:inline-flex;align-items:center;gap:5px;background:#eff6ff;color:var(--blue);font-size:.7rem;font-weight:700;padding:4px 13px;border-radius:20px;margin-bottom:14px;border:1px solid #bfdbfe;letter-spacing:.3px;text-transform:uppercase}
+.ai-header h1{font-family:'Manrope',sans-serif;font-size:1.65rem;font-weight:800;letter-spacing:-.4px;margin-bottom:6px}
+.ai-header p{color:var(--txt2);font-size:.88rem}
+.ai-chat{background:white;border:1px solid var(--bdr);border-radius:13px;overflow:hidden;box-shadow:var(--shm)}
+.ai-suggestions{display:flex;flex-wrap:wrap;gap:7px;padding:12px 14px;border-bottom:1px solid var(--bdr2)}
+.sug-pill{padding:5px 13px;border-radius:20px;border:1px solid var(--bdr2);font-size:.75rem;cursor:pointer;transition:.15s;background:white;color:var(--txt2);font-weight:500}
+.sug-pill:hover{border-color:var(--blue);color:var(--blue);background:#eff6ff}
+.ai-messages{min-height:360px;max-height:440px;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.amsg{max-width:82%;display:flex;gap:9px;align-items:flex-start}
+.amsg.u{align-self:flex-end;flex-direction:row-reverse}
+.amsg-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.amsg.b .amsg-av{background:#eff6ff;border:1px solid #bfdbfe}
+.amsg.u .amsg-av{background:var(--red-lt);border:1px solid var(--red-mid)}
+.amsg-bubble{padding:10px 13px;border-radius:12px;font-size:.84rem;line-height:1.6}
+.amsg.b .amsg-bubble{background:#f8f9fb;border:1px solid var(--bdr2);border-radius:4px 12px 12px 12px}
+.amsg.u .amsg-bubble{background:var(--red);color:white;border-radius:12px 4px 12px 12px}
+.typing-ind{display:none;align-items:center;gap:8px;padding:10px 13px;background:#f8f9fb;border:1px solid var(--bdr2);border-radius:4px 12px 12px 12px;font-size:.78rem;color:var(--txt2);width:fit-content}
+.typing-ind.on{display:flex}
+.tdots{display:flex;gap:3px}
+.tdots span{width:5px;height:5px;border-radius:50%;background:var(--txt3);animation:bnc 1.2s infinite}
+.tdots span:nth-child(2){animation-delay:.2s}
+.tdots span:nth-child(3){animation-delay:.4s}
+@keyframes bnc{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+.ai-input-row{display:flex;gap:8px;padding:13px 14px;border-top:1px solid var(--bdr2)}
+.ai-input{flex:1;padding:10px 13px;border:1.5px solid var(--bdr);border-radius:9px;font-size:.87rem;outline:none;transition:.15s}
+.ai-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(21,101,192,.08)}
+.ai-send{padding:10px 18px;background:var(--blue);color:white;border:none;border-radius:9px;font-weight:700;font-size:.86rem;cursor:pointer;transition:.15s}
+.ai-send:hover{background:#0d47a1}
+
+/* ── CONTACT ── */
+.ct-wrap{max-width:780px;margin:0 auto;padding:36px 20px}
+.ct-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:560px){.ct-grid{grid-template-columns:1fr}}
+.ct-card{background:white;border:1px solid var(--bdr2);border-radius:11px;padding:22px}
+.ct-ico{font-size:1.7rem;margin-bottom:10px;display:block}
+.ct-title{font-size:.9rem;font-weight:700;margin-bottom:5px}
+.ct-val{font-size:.85rem;color:var(--blue)}
+.ct-val a{color:var(--blue)}
+.ct-val a:hover{text-decoration:underline}
+
+/* ── FOOTER ── */
+footer{background:#1a1a2e;color:rgba(255,255,255,.6);margin-top:48px}
+.ft-top{max-width:1160px;margin:0 auto;padding:44px 20px 32px;display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:36px}
+@media(max-width:860px){.ft-top{grid-template-columns:1fr 1fr;gap:24px}}
+@media(max-width:500px){.ft-top{grid-template-columns:1fr}}
+.ft-brand p{font-size:.79rem;line-height:1.7;max-width:240px;margin-top:9px}
+.ft-brand-logo{font-family:'Manrope',sans-serif;font-size:1.1rem;font-weight:800;color:white;letter-spacing:-.3px}
+.ft-brand-logo span{color:#ff7070}
+.ft-contact{margin-top:12px}
+.ft-contact a{font-size:.78rem;color:rgba(255,255,255,.5);display:block;margin-bottom:4px;transition:.15s}
+.ft-contact a:hover{color:white}
+.ft-heading{font-size:.75rem;font-weight:700;color:white;margin-bottom:12px;text-transform:uppercase;letter-spacing:.6px}
+.ft-list{list-style:none;display:flex;flex-direction:column;gap:7px}
+.ft-list li a{font-size:.78rem;color:rgba(255,255,255,.5);cursor:pointer;transition:.15s}
+.ft-list li a:hover{color:white}
+.ft-bottom{border-top:1px solid rgba(255,255,255,.08);padding:16px 20px;text-align:center;font-size:.74rem;max-width:1160px;margin:0 auto}
+.ft-bottom a{color:rgba(255,255,255,.4)}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:22px;right:18px;z-index:1000;
+  background:#1a1a2e;color:white;border-radius:9px;
+  padding:11px 16px;display:flex;align-items:center;gap:9px;
+  box-shadow:0 8px 24px rgba(0,0,0,.2);font-size:.84rem;
+  transform:translateY(70px);opacity:0;transition:all .3s;
+  pointer-events:none;max-width:280px;
+}
+.toast.on{transform:translateY(0);opacity:1}
+
+/* ── PAGE WRAP ── */
+.tpg{max-width:1160px;margin:0 auto;padding:28px 20px}
+
+/* ── FEATURES STRIP ── */
+.features-strip{background:white;border-top:1px solid var(--bdr2);border-bottom:1px solid var(--bdr2);padding:40px 20px;margin:32px 0}
+.features-inner{max-width:1160px;margin:0 auto}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:24px}
+.feat-item{display:flex;gap:14px;align-items:flex-start}
+.feat-ico{width:40px;height:40px;border-radius:10px;background:var(--red-lt);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;border:1px solid var(--red-mid)}
+.feat-body h4{font-size:.88rem;font-weight:700;margin-bottom:3px;color:var(--txt)}
+.feat-body p{font-size:.77rem;color:var(--txt3);line-height:1.55}
 </style>
 </head>
 <body>
 
-<div id="cursor"></div>
-<div id="cursor-ring"></div>
-
-<!-- NAVBAR -->
+<!-- ═══════════════ NAVBAR ═══════════════ -->
 <nav class="nav">
-  <a class="logo" href="#">
-    <div class="logo-mark">📄</div>
-    <span class="logo-text">DocumentChanger</span>
-  </a>
+  <div class="nav-logo" onclick="goPage('home')">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6C4.9 2 4 2.9 4 4v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>
+    </div>
+    <span class="nav-logo-text">Document<span>Changer</span></span>
+  </div>
+
+  <div class="nav-links">
+    <div class="nav-link active" onclick="goPage('home')" data-p="home"><span class="nav-link-ico">🏠</span>Home</div>
+
+    <!-- PDF Tools dropdown -->
+    <div class="nav-link has-drop" onclick="goPage('pdf')" data-p="pdf">
+      <span class="nav-link-ico">📄</span>PDF Tools
+      <div class="nav-drop" onclick="event.stopPropagation()">
+        <div class="nav-drop-item" onclick="openT('pdf2jpg');goPage('pdf')">📄 PDF to JPG</div>
+        <div class="nav-drop-item" onclick="openT('jpg2pdf');goPage('pdf')">🖼️ JPG to PDF</div>
+        <div class="nav-drop-item" onclick="openT('pdfcompress');goPage('pdf')">🗜️ Compress PDF</div>
+        <div class="nav-drop-item" onclick="openT('pdfmerge');goPage('pdf')">📎 Merge PDF</div>
+        <div class="nav-drop-item" onclick="openT('pdfsplit');goPage('pdf')">✂️ Split PDF</div>
+        <div class="nav-drop-item" onclick="openT('word2pdf');goPage('pdf')">📝 Word to PDF</div>
+        <div class="nav-drop-item" onclick="openT('pdf2text');goPage('pdf')">📑 PDF to Text</div>
+      </div>
+    </div>
+
+    <!-- Image Tools dropdown -->
+    <div class="nav-link has-drop" onclick="goPage('img')" data-p="img">
+      <span class="nav-link-ico">🖼️</span>Image Tools
+      <div class="nav-drop" onclick="event.stopPropagation()">
+        <div class="nav-drop-item" onclick="openT('imgcompress');goPage('img')">🗜️ Compress Image</div>
+        <div class="nav-drop-item" onclick="openT('imgresize');goPage('img')">↔️ Resize Image</div>
+        <div class="nav-drop-item" onclick="openT('img2img');goPage('img')">🔄 Convert Format</div>
+        <div class="nav-drop-item" onclick="openT('imgbg');goPage('img')">✂️ Remove Background</div>
+        <div class="nav-drop-item" onclick="openT('imggrayscale');goPage('img')">⚫ Grayscale Filter</div>
+        <div class="nav-drop-item" onclick="openT('imgrotate');goPage('img')">🔃 Rotate / Flip</div>
+        <div class="nav-drop-item" onclick="openT('imgwatermark');goPage('img')">💧 Add Watermark</div>
+      </div>
+    </div>
+
+    <!-- Document dropdown -->
+    <div class="nav-link has-drop" onclick="goPage('doc')" data-p="doc">
+      <span class="nav-link-ico">📝</span>Documents
+      <div class="nav-drop" onclick="event.stopPropagation()">
+        <div class="nav-drop-item" onclick="openT('word2pdf');goPage('doc')">📝 Word to PDF</div>
+        <div class="nav-drop-item" onclick="openT('txt2pdf');goPage('doc')">✏️ Text to PDF</div>
+        <div class="nav-drop-item" onclick="openT('caseconv');goPage('doc')">Aa Case Converter</div>
+        <div class="nav-drop-item" onclick="openT('wordcount');goPage('doc')">📊 Word Counter</div>
+        <div class="nav-drop-item" onclick="openT('base64');goPage('doc')">🔐 Base64 Tool</div>
+        <div class="nav-drop-item" onclick="openT('jsonformat');goPage('doc')">{ } JSON Formatter</div>
+        <div class="nav-drop-item" onclick="openT('textdiff');goPage('doc')">🔍 Text Diff</div>
+      </div>
+    </div>
+
+    <div class="nav-link" onclick="goPage('resume')" data-p="resume"><span class="nav-link-ico">📋</span>Resume Builder</div>
+    <div class="nav-link" onclick="goPage('ai')" data-p="ai"><span class="nav-link-ico">🤖</span>AI Assistant</div>
+    <div class="nav-link" onclick="goPage('contact')" data-p="contact"><span class="nav-link-ico">📞</span>Support</div>
+  </div>
+
   <div class="nav-right">
-    <div class="nav-pill live">All Systems Go</div>
-    <div class="nav-pill">100% Free</div>
+    <button class="btn-nav outline" onclick="goPage('contact')">Contact</button>
+    <button class="btn-nav solid" onclick="goPage('ai')">✨ AI Help</button>
   </div>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-grid"></div>
-  <div class="hero-content">
-    <div class="hero-eyebrow">
-      <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M7 4v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      All-in-One Document Suite — Free &amp; Private
-    </div>
-    <h1>Convert, Edit &amp; Transform<span class="line2">Any Document, Instantly</span></h1>
-    <p class="hero-sub">PDF, Word, Images, Text — convert between any format in seconds. Everything processes right in your browser. Zero uploads, zero servers, zero tracking.</p>
-    <div class="hero-ctas">
-      <button class="btn-primary" onclick="document.getElementById('tools-section').scrollIntoView({behavior:'smooth'})">🚀 Start Converting Free</button>
-      <button class="btn-secondary" onclick="document.getElementById('features-section').scrollIntoView({behavior:'smooth'})">See All Features →</button>
+
+<!-- ═══════════════ HOME PAGE ═══════════════ -->
+<div id="pg-home" class="page on">
+  <div class="hero">
+    <div class="hero-badge">✦ 100% Free · No Sign-up · Browser-Based</div>
+    <h1>All-in-One <em>Document</em><br>& Image Tool Suite</h1>
+    <p class="hero-sub">Convert PDF, compress images, edit documents and build resumes — free, private, and instant in your browser.</p>
+    <div class="search-bar">
+      <input type="text" id="srch" placeholder="Search tools... PDF to JPG, compress image..." oninput="doSearch(this.value)">
+      <button onclick="doSearch(document.getElementById('srch').value)">🔍 Search</button>
     </div>
     <div class="hero-stats">
-      <div class="stat-item"><div class="stat-num">15+</div><div class="stat-label">Conversion Tools</div></div>
-      <div class="stat-item"><div class="stat-num">0s</div><div class="stat-label">Wait Time</div></div>
-      <div class="stat-item"><div class="stat-num">100%</div><div class="stat-label">Browser-Based</div></div>
-      <div class="stat-item"><div class="stat-num">∞</div><div class="stat-label">Files / Day</div></div>
+      <div class="hstat"><strong>35+</strong><span>Free Tools</span></div>
+      <div class="hstat"><strong>100%</strong><span>Private</span></div>
+      <div class="hstat"><strong>0</strong><span>Sign-up</span></div>
+      <div class="hstat"><strong>∞</strong><span>Daily Uses</span></div>
     </div>
   </div>
-  <div class="scroll-hint">
-    <span>Scroll to explore</span>
-    <div class="scroll-line"></div>
-  </div>
-</section>
 
-<!-- TOOLS -->
-<div id="tools-section" class="section">
-  <div class="section-head">
-    <div class="section-tag">Conversion Tools</div>
-    <div class="section-title">Pick Your Converter</div>
-    <div class="section-sub">Click any card to open the tool instantly — no page reload needed.</div>
+  <!-- Features strip -->
+  <div class="features-strip">
+    <div class="features-inner">
+      <div class="feat-grid">
+        <div class="feat-item"><div class="feat-ico">🔒</div><div class="feat-body"><h4>100% Private</h4><p>Files never leave your browser. Zero server uploads, zero tracking.</p></div></div>
+        <div class="feat-item"><div class="feat-ico">⚡</div><div class="feat-body"><h4>Instant Processing</h4><p>No waiting queues. Convert files in seconds right in your browser.</p></div></div>
+        <div class="feat-item"><div class="feat-ico">🆓</div><div class="feat-body"><h4>Always Free</h4><p>No subscription, no watermarks, no file size limits. Free forever.</p></div></div>
+        <div class="feat-item"><div class="feat-ico">📱</div><div class="feat-body"><h4>Works Everywhere</h4><p>Desktop, tablet, or mobile — any modern browser is all you need.</p></div></div>
+      </div>
+    </div>
   </div>
-  <div class="tools-grid" id="grid1"></div>
 
-  <div class="section-head" style="margin-top:3rem">
-    <div class="section-tag">Text &amp; Utility Tools</div>
-    <div class="section-title">Quick Text Utilities</div>
-    <div class="section-sub">Fast tools for working with text content directly in the browser.</div>
+  <div class="cat-bar">
+    <div class="cat-bar-in">
+      <div class="ctab on" onclick="filterHome('all',this)"><span class="cdot" style="background:#e8192c"></span>All Tools</div>
+      <div class="ctab" onclick="filterHome('pdf',this)"><span class="cdot" style="background:#ff5722"></span>PDF</div>
+      <div class="ctab" onclick="filterHome('image',this)"><span class="cdot" style="background:#1565C0"></span>Image</div>
+      <div class="ctab" onclick="filterHome('doc',this)"><span class="cdot" style="background:#2E7D32"></span>Document</div>
+      <div class="ctab" onclick="filterHome('text',this)"><span class="cdot" style="background:#6A1B9A"></span>Text</div>
+    </div>
   </div>
-  <div class="tools-grid" id="grid2"></div>
+
+  <div class="tools-wrap">
+    <div class="ad"><strong>Advertisement</strong>Google AdSense 728×90 Leaderboard Banner</div>
+
+    <div class="sec-header"><div class="sec-title"><div class="sec-icon" style="background:#fff0f1">📄</div>PDF Tools</div><div class="see-all" onclick="goPage('pdf')">See all →</div></div>
+    <div class="tgrid" id="hg-pdf"></div>
+
+    <div class="ad" style="margin-top:24px"><strong>Advertisement</strong>Middle Banner (336×280 or Responsive)</div>
+
+    <div class="sec-header" style="margin-top:28px"><div class="sec-title"><div class="sec-icon" style="background:#e3f2fd">🖼️</div>Image Tools</div><div class="see-all" onclick="goPage('img')">See all →</div></div>
+    <div class="tgrid" id="hg-img"></div>
+
+    <div class="sec-header" style="margin-top:28px"><div class="sec-title"><div class="sec-icon" style="background:#e8f5e9">📝</div>Document Tools</div><div class="see-all" onclick="goPage('doc')">See all →</div></div>
+    <div class="tgrid" id="hg-doc"></div>
+
+    <div class="sec-header" style="margin-top:28px"><div class="sec-title"><div class="sec-icon" style="background:#f3e5f5">✏️</div>Text Utilities</div><div class="see-all" onclick="goPage('doc')">See all →</div></div>
+    <div class="tgrid" id="hg-txt"></div>
+  </div>
 </div>
 
-<!-- FEATURES -->
-<div id="features-section" class="features-strip">
-  <div style="text-align:center;margin-bottom:3rem">
-    <div style="font-size:.72rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--a1);margin-bottom:.75rem">Why Choose Us</div>
-    <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;letter-spacing:-1px">Built differently. Works privately.</div>
+
+<!-- ═══════════════ PDF PAGE ═══════════════ -->
+<div id="pg-pdf" class="page">
+  <div class="page-hd">
+    <div class="page-hd-in">
+      <div class="page-title-row">
+        <div class="page-title-ico" style="background:#fff0f1">📄</div>
+        <div>
+          <div class="page-title">PDF Tools</div>
+          <div class="page-subtitle">Convert, compress, merge, split and edit PDF files — all free</div>
+        </div>
+      </div>
+      <div class="page-tabs" id="pdf-tabs">
+        <div class="ptab on" onclick="filterPdf('all',this)">All PDF Tools</div>
+        <div class="ptab" onclick="filterPdf('convert',this)">Convert</div>
+        <div class="ptab" onclick="filterPdf('compress',this)">Compress</div>
+        <div class="ptab" onclick="filterPdf('organize',this)">Organize</div>
+        <div class="ptab" onclick="filterPdf('security',this)">Security</div>
+      </div>
+    </div>
   </div>
-  <div class="feat-grid">
-    <div class="feat-item"><div class="feat-ico">🔐</div><div class="feat-body"><h4>Zero Data Sent</h4><p>All processing happens locally in your browser. Your files never touch a server.</p></div></div>
-    <div class="feat-item"><div class="feat-ico">⚡</div><div class="feat-body"><h4>Instant Results</h4><p>No queue, no waiting room. Convert files in milliseconds, right now.</p></div></div>
-    <div class="feat-item"><div class="feat-ico">🆓</div><div class="feat-body"><h4>Always Free</h4><p>No subscription. No file size limits. No watermarks. Just free conversions, forever.</p></div></div>
-    <div class="feat-item"><div class="feat-ico">📱</div><div class="feat-body"><h4>Works Everywhere</h4><p>Desktop, tablet, mobile — any modern browser is all you need.</p></div></div>
-    <div class="feat-item"><div class="feat-ico">🎨</div><div class="feat-body"><h4>High Quality Output</h4><p>Crisp, clear conversions — no compression artifacts, no quality loss.</p></div></div>
-    <div class="feat-item"><div class="feat-ico">🧩</div><div class="feat-body"><h4>15+ Tools in One</h4><p>PDF, Word, Images, Text — everything you need without switching apps.</p></div></div>
+  <div class="tpg">
+    <div class="ad"><strong>Advertisement</strong>PDF Page Top Banner</div>
+    <div class="big-grid" id="pdf-grid"></div>
   </div>
 </div>
 
-<!-- FOOTER -->
+
+<!-- ═══════════════ IMAGE PAGE ═══════════════ -->
+<div id="pg-img" class="page">
+  <div class="page-hd">
+    <div class="page-hd-in">
+      <div class="page-title-row">
+        <div class="page-title-ico" style="background:#e3f2fd">🖼️</div>
+        <div>
+          <div class="page-title">Image Tools</div>
+          <div class="page-subtitle">Compress, convert, resize, crop and edit images — fast & private</div>
+        </div>
+      </div>
+      <div class="page-tabs" id="img-tabs">
+        <div class="ptab on" onclick="filterImg('all',this)">All Image Tools</div>
+        <div class="ptab" onclick="filterImg('compress',this)">Compress</div>
+        <div class="ptab" onclick="filterImg('convert',this)">Convert</div>
+        <div class="ptab" onclick="filterImg('resize',this)">Resize</div>
+        <div class="ptab" onclick="filterImg('bg',this)">Background</div>
+        <div class="ptab" onclick="filterImg('filter',this)">Filters</div>
+      </div>
+    </div>
+  </div>
+  <div class="tpg">
+    <div class="ad"><strong>Advertisement</strong>Image Page Top Banner</div>
+    <div class="big-grid" id="img-grid"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ DOCUMENT PAGE ═══════════════ -->
+<div id="pg-doc" class="page">
+  <div class="page-hd">
+    <div class="page-hd-in">
+      <div class="page-title-row">
+        <div class="page-title-ico" style="background:#e8f5e9">📝</div>
+        <div>
+          <div class="page-title">Document & Text Tools</div>
+          <div class="page-subtitle">Word converters, text utilities and productivity tools</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="tpg">
+    <div class="big-grid" id="doc-grid"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ RESUME PAGE ═══════════════ -->
+<div id="pg-resume" class="page">
+  <div class="resume-hero">
+    <div style="display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(232,25,44,.3);color:#ffb3bc;padding:5px 13px;border-radius:20px;margin-bottom:14px">📋 Free Resume Builder</div>
+    <h1>Build a Professional Resume<br>in Minutes</h1>
+    <p>ATS-friendly templates. Fill your details, download as PDF. 100% Free.</p>
+    <div class="rbtns">
+      <button class="rbtn-p" onclick="showBuilder()">🚀 Start Building</button>
+      <button class="rbtn-o" onclick="document.getElementById('tmpl-sec').scrollIntoView({behavior:'smooth'})">Browse Templates</button>
+    </div>
+  </div>
+  <div id="tmpl-sec" style="max-width:1100px;margin:0 auto;padding:32px 20px">
+    <div class="sec-header" style="margin-bottom:18px"><div class="sec-title">Choose a Template</div></div>
+    <div class="tmpl-grid" id="tmpl-grid"></div>
+  </div>
+  <div id="builder-sec" style="max-width:800px;margin:0 auto;padding:0 20px 36px;display:none">
+    <div class="sec-header" style="margin-bottom:18px"><div class="sec-title">Your Resume Details</div></div>
+    <div class="form-sec">
+      <div class="form-sec-title">👤 Personal Info</div>
+      <div class="frow"><div><div class="flb">Full Name</div><input class="finp" id="rn" placeholder="Arjun Sharma"></div><div><div class="flb">Job Title</div><input class="finp" id="rt" placeholder="Software Engineer"></div></div>
+      <div class="frow"><div><div class="flb">Email</div><input class="finp" id="re" placeholder="you@email.com"></div><div><div class="flb">Phone</div><input class="finp" id="rp" placeholder="+91 99999 99999"></div></div>
+      <div class="frow"><div><div class="flb">City</div><input class="finp" id="rc" placeholder="Mumbai"></div><div><div class="flb">LinkedIn / Portfolio</div><input class="finp" id="rl" placeholder="linkedin.com/in/you"></div></div>
+    </div>
+    <div class="form-sec"><div class="form-sec-title">📝 Summary</div><textarea class="fta" id="rs" placeholder="2-3 sentences about your expertise and goals..."></textarea></div>
+    <div class="form-sec">
+      <div class="form-sec-title">💼 Work Experience</div>
+      <div id="exp-con">
+        <div class="exp-it">
+          <div class="frow"><div><div class="flb">Company</div><input class="finp exp-co" placeholder="Google India"></div><div><div class="flb">Role</div><input class="finp exp-ro" placeholder="Senior Developer"></div></div>
+          <div class="frow"><div><div class="flb">From</div><input class="finp exp-fr" placeholder="Jan 2022"></div><div><div class="flb">To</div><input class="finp exp-to" placeholder="Present"></div></div>
+          <div class="flb">Key Achievements</div><textarea class="fta exp-ds" placeholder="• Led team of 5 to deliver product on time&#10;• Improved API speed by 40%"></textarea>
+        </div>
+      </div>
+      <button class="add-btn" onclick="addExp()">＋ Add Another Experience</button>
+    </div>
+    <div class="form-sec">
+      <div class="form-sec-title">🎓 Education</div>
+      <div class="frow"><div><div class="flb">Degree</div><input class="finp" id="rd" placeholder="B.Tech Computer Science"></div><div><div class="flb">University</div><input class="finp" id="ru" placeholder="IIT Delhi"></div></div>
+      <div class="frow"><div><div class="flb">Year</div><input class="finp" id="ry" placeholder="2018–2022"></div><div><div class="flb">CGPA / %</div><input class="finp" id="rg" placeholder="8.5 / 10"></div></div>
+    </div>
+    <div class="form-sec"><div class="form-sec-title">⚡ Skills</div><textarea class="fta" id="rsk" style="min-height:54px" placeholder="JavaScript, React, Node.js, Python, SQL, Git..."></textarea></div>
+    <button class="gen-btn" onclick="generateResume()">📄 Generate & Download PDF Resume</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════ AI PAGE ═══════════════ -->
+<div id="pg-ai" class="page">
+  <div class="ai-wrap">
+    <div class="ai-header">
+      <div class="ai-badge">🤖 AI Powered</div>
+      <h1>Document Assistant</h1>
+      <p>Ask anything about PDF, images, tools, resume, file formats — get instant expert answers</p>
+    </div>
+    <div class="ai-chat">
+      <div class="ai-suggestions">
+        <div class="sug-pill" onclick="qs('How do I compress a PDF?')">Compress PDF?</div>
+        <div class="sug-pill" onclick="qs('How to convert JPG to PDF?')">JPG to PDF?</div>
+        <div class="sug-pill" onclick="qs('How to remove image background?')">Remove BG?</div>
+        <div class="sug-pill" onclick="qs('How to make a professional resume?')">Resume tips</div>
+        <div class="sug-pill" onclick="qs('What is the difference between PNG and JPG?')">PNG vs JPG</div>
+        <div class="sug-pill" onclick="qs('How to reduce image file size?')">Reduce image size?</div>
+        <div class="sug-pill" onclick="qs('How do I merge multiple PDF files?')">Merge PDFs?</div>
+      </div>
+      <div class="ai-messages" id="ai-msgs">
+        <div class="amsg b">
+          <div class="amsg-av">🤖</div>
+          <div class="amsg-bubble">Hello! I'm your Document Assistant. I can help you with PDF conversion, image editing, resume building, and any document question. What can I help you with today?</div>
+        </div>
+      </div>
+      <div id="aityping" class="typing-ind" style="margin:0 18px 10px">
+        <div class="amsg-av">🤖</div>
+        <div class="tdots"><span></span><span></span><span></span></div>
+        <span style="color:var(--txt3);font-size:.77rem">Typing...</span>
+      </div>
+      <div class="ai-input-row">
+        <input class="ai-input" id="ai-inp" placeholder="Ask about PDF, images, resume, documents..." onkeydown="if(event.key==='Enter')sendAI()">
+        <button class="ai-send" onclick="sendAI()">Send ➤</button>
+      </div>
+    </div>
+    <div class="ad" style="margin-top:22px"><strong>Advertisement</strong>AI Page Banner</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ CONTACT PAGE ═══════════════ -->
+<div id="pg-contact" class="page">
+  <div class="ct-wrap">
+    <div style="margin-bottom:24px">
+      <div style="font-family:'Manrope',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.4px;margin-bottom:7px">Get in Touch</div>
+      <p style="color:var(--txt2);font-size:.88rem">Questions, feedback, or advertising inquiries? We respond within 24 hours.</p>
+    </div>
+    <div class="ct-grid">
+      <div class="ct-card"><span class="ct-ico">📧</span><div class="ct-title">Email Support</div><p style="font-size:.77rem;color:var(--txt2);margin-bottom:8px">Tool issues, feedback, general queries</p><div class="ct-val"><a href="mailto:mahasin0465@gmail.com">mahasin0465@gmail.com</a></div></div>
+      <div class="ct-card"><span class="ct-ico">📱</span><div class="ct-title">Phone / WhatsApp</div><p style="font-size:.77rem;color:var(--txt2);margin-bottom:8px">Urgent support or partnerships</p><div class="ct-val"><a href="tel:+917551874637">+91 7551874637</a></div></div>
+      <div class="ct-card"><span class="ct-ico">💼</span><div class="ct-title">Advertising</div><p style="font-size:.77rem;color:var(--txt2);margin-bottom:8px">Want to advertise on DocumentChanger?</p><div class="ct-val"><a href="mailto:mahasin0465@gmail.com">mahasin0465@gmail.com</a></div></div>
+      <div class="ct-card"><span class="ct-ico">⏰</span><div class="ct-title">Response Time</div><p style="font-size:.77rem;color:var(--txt2);margin-bottom:8px">We typically respond within</p><div class="ct-val" style="color:#16a34a;font-weight:700">24 hours</div></div>
+    </div>
+    <div class="form-sec">
+      <div class="form-sec-title">📩 Send a Message</div>
+      <div class="frow"><div><div class="flb">Name</div><input class="finp" id="cn" placeholder="Your full name"></div><div><div class="flb">Email</div><input class="finp" id="ce" placeholder="your@email.com"></div></div>
+      <div class="fgrp"><div class="flb">Subject</div><input class="finp" id="cs" placeholder="e.g. Tool issue, advertising inquiry..."></div>
+      <div class="fgrp"><div class="flb">Message</div><textarea class="fta" id="cm" style="min-height:100px" placeholder="Describe your issue or request..."></textarea></div>
+      <button class="gen-btn" onclick="sendContact()" style="width:auto;padding:11px 26px">📤 Send Message</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ TOOL MODAL ═══════════════ -->
+<div class="wk-overlay" id="wk" onclick="closeWk(event)">
+  <div class="wk-box" id="wk-box">
+    <div class="wk-head">
+      <div class="wk-head-ico" id="wico">📄</div>
+      <div class="wk-head-info">
+        <div class="wk-head-title" id="wttl">Tool</div>
+        <div class="wk-head-sub">Free & Private — Files processed in your browser only</div>
+      </div>
+      <button class="wk-close" onclick="closeWk()">✕</button>
+    </div>
+    <div class="wk-body" id="wbody"></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
 <footer>
-  <div>
-    <div class="foot-logo">DocumentChanger</div>
-    <div class="foot-note" style="margin-top:4px">All processing is done locally in your browser.</div>
+  <div class="ft-top">
+    <div class="ft-brand">
+      <div class="ft-brand-logo">Document<span>Changer</span></div>
+      <p>Free online document and image tools. All processing done locally in your browser — 100% private.</p>
+      <div class="ft-contact">
+        <a href="mailto:mahasin0465@gmail.com">📧 mahasin0465@gmail.com</a>
+        <a href="tel:+917551874637">📱 +91 7551874637</a>
+      </div>
+    </div>
+    <div>
+      <div class="ft-heading">PDF Tools</div>
+      <ul class="ft-list">
+        <li><a onclick="openT('pdf2jpg')">PDF to JPG</a></li>
+        <li><a onclick="openT('jpg2pdf')">JPG to PDF</a></li>
+        <li><a onclick="openT('word2pdf')">Word to PDF</a></li>
+        <li><a onclick="openT('pdf2text')">PDF to Text</a></li>
+        <li><a onclick="openT('pdfmerge')">Merge PDF</a></li>
+        <li><a onclick="openT('pdfcompress')">Compress PDF</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="ft-heading">Image Tools</div>
+      <ul class="ft-list">
+        <li><a onclick="openT('imgcompress')">Compress Image</a></li>
+        <li><a onclick="openT('imgresize')">Resize Image</a></li>
+        <li><a onclick="openT('img2img')">Convert Image</a></li>
+        <li><a onclick="openT('imgbg')">Remove Background</a></li>
+        <li><a onclick="openT('imgrotate')">Rotate / Flip</a></li>
+        <li><a onclick="openT('imggrayscale')">Grayscale Filter</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="ft-heading">More Tools</div>
+      <ul class="ft-list">
+        <li><a onclick="goPage('resume')">Resume Builder</a></li>
+        <li><a onclick="goPage('ai')">AI Assistant</a></li>
+        <li><a onclick="openT('caseconv')">Case Converter</a></li>
+        <li><a onclick="openT('wordcount')">Word Counter</a></li>
+        <li><a onclick="openT('base64')">Base64 Encoder</a></li>
+        <li><a onclick="openT('jsonformat')">JSON Formatter</a></li>
+      </ul>
+    </div>
   </div>
-  <div class="foot-links">
-    <a href="#">Privacy Policy</a>
-    <a href="#">About</a>
-    <a href="#">Contact</a>
-  </div>
-  <div class="foot-note">© 2025 DocumentChanger. Free forever.</div>
+  <div class="ft-bottom">© 2025 DocumentChanger — All tools are free. All processing is local in your browser. &nbsp;|&nbsp; <a href="#">Privacy Policy</a> &nbsp;|&nbsp; <a href="#">Terms</a></div>
 </footer>
 
-<!-- WORKSPACE PANEL -->
-<div class="workspace-overlay" id="overlay" onclick="closePanel(event)">
-  <div class="workspace-panel" id="panel">
-    <div class="panel-handle"></div>
-    <div class="panel-header">
-      <div class="panel-title" id="panel-title">Tool</div>
-      <button class="panel-close" onclick="closePanel()">✕</button>
-    </div>
-    <div id="panel-body"></div>
-  </div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <span class="toast-ico" id="t-ico">✅</span>
-  <span class="toast-msg" id="t-msg">Done!</span>
-</div>
+<div class="toast" id="toast"><span id="tico">✅</span>&nbsp;<span id="tmsg">Done!</span></div>
 
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-/* CURSOR */
-const cur = document.getElementById('cursor');
-const ring = document.getElementById('cursor-ring');
-document.addEventListener('mousemove', e => {
-  cur.style.left = e.clientX + 'px'; cur.style.top = e.clientY + 'px';
-  setTimeout(() => { ring.style.left = e.clientX + 'px'; ring.style.top = e.clientY + 'px'; }, 80);
-});
-
-/* CARD GLOW */
-document.addEventListener('mousemove', e => {
-  document.querySelectorAll('.tool-card').forEach(card => {
-    const r = card.getBoundingClientRect();
-    card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
-    card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
-  });
-});
-
-/* TOOLS DATA */
-const tools1 = [
-  {id:'pdf2jpg',title:'PDF → JPG',desc:'Convert every PDF page into sharp JPG images.',icon:'📄',fmt:['PDF','JPG','PNG'],hot:true,tc:'#6c63ff'},
-  {id:'jpg2pdf',title:'Images → PDF',desc:'Combine JPG, PNG, WebP into a single PDF document.',icon:'🖼️',fmt:['JPG','PNG','WebP','PDF'],hot:true,tc:'#ff4d8d'},
-  {id:'pdf2text',title:'PDF → Text',desc:'Extract all text content from any PDF file.',icon:'📑',fmt:['PDF','TXT'],tc:'#00e5b0'},
-  {id:'word2pdf',title:'Word → PDF',desc:'Convert DOCX documents into clean PDF files.',icon:'📝',fmt:['DOCX','PDF'],hot:true,tc:'#ffb347'},
-  {id:'img2img',title:'Image Converter',desc:'Convert between JPG, PNG, WebP with quality control.',icon:'🔄',fmt:['JPG','PNG','WebP'],tc:'#6c63ff'},
-  {id:'imgcompress',title:'Image Compressor',desc:'Shrink image file size while keeping quality high.',icon:'🗜️',fmt:['JPG','PNG'],tc:'#ff4d8d'},
-  {id:'imgcrop',title:'Image Resizer',desc:'Resize images to exact pixel dimensions instantly.',icon:'✂️',fmt:['JPG','PNG','WebP'],tc:'#00e5b0'},
-  {id:'pdfmerge',title:'Merge PDFs',desc:'Combine multiple PDF files into one document.',icon:'📎',fmt:['PDF','PDF'],tc:'#ffb347'},
-  {id:'pdf2png',title:'PDF → PNG',desc:'Export PDF pages as transparent PNG images.',icon:'🖼️',fmt:['PDF','PNG'],tc:'#6c63ff'},
-  {id:'txt2pdf',title:'Text → PDF',desc:'Type or paste text and export it as a clean PDF.',icon:'💬',fmt:['TXT','PDF'],tc:'#ff4d8d'},
-];
-const tools2 = [
-  {id:'caseconv',title:'Case Converter',desc:'Instantly switch between UPPER, lower, Title, camelCase.',icon:'Aa',fmt:['TEXT'],tc:'#00e5b0'},
-  {id:'wordcount',title:'Word Counter',desc:'Count words, characters, sentences, and reading time.',icon:'📊',fmt:['TEXT'],tc:'#ffb347'},
-  {id:'base64',title:'Base64 Encode/Decode',desc:'Encode or decode any text to/from Base64.',icon:'🔐',fmt:['TEXT'],tc:'#6c63ff'},
-  {id:'textdiff',title:'Text Diff Checker',desc:'Compare two texts side-by-side and see differences.',icon:'🔍',fmt:['TEXT'],tc:'#ff4d8d'},
-  {id:'jsonformat',title:'JSON Formatter',desc:'Prettify or minify any JSON data instantly.',icon:'{ }',fmt:['JSON'],tc:'#00e5b0'},
+/* ── ALL TOOLS DATA ── */
+const T=[
+  // PDF
+  {id:'pdf2jpg',n:'PDF to JPG',d:'Convert PDF pages to JPG images',i:'📄',cat:'pdf',sub:'convert',c:'#E8192C',bg:'#fff0f1',hot:1},
+  {id:'jpg2pdf',n:'JPG to PDF',d:'Merge images into one PDF file',i:'🖼️',cat:'pdf',sub:'convert',c:'#E8192C',bg:'#fff0f1',hot:1},
+  {id:'word2pdf',n:'Word to PDF',d:'Convert DOCX documents to PDF',i:'📝',cat:'pdf',sub:'convert',c:'#1565C0',bg:'#e3f2fd',hot:1},
+  {id:'pdf2text',n:'PDF to Text',d:'Extract all text from any PDF',i:'📑',cat:'pdf',sub:'convert',c:'#E65100',bg:'#fff3e0'},
+  {id:'pdfmerge',n:'Merge PDF',d:'Combine multiple PDFs into one',i:'📎',cat:'pdf',sub:'organize',c:'#E65100',bg:'#fff3e0',hot:1},
+  {id:'pdfcompress',n:'Compress PDF',d:'Reduce PDF size without quality loss',i:'🗜️',cat:'pdf',sub:'compress',c:'#2E7D32',bg:'#e8f5e9',hot:1},
+  {id:'pdf2png',n:'PDF to PNG',d:'Export PDF pages as PNG images',i:'🖼️',cat:'pdf',sub:'convert',c:'#6A1B9A',bg:'#f3e5f5'},
+  {id:'txt2pdf',n:'Text to PDF',d:'Type or paste text, export as PDF',i:'✏️',cat:'pdf',sub:'convert',c:'#00695C',bg:'#e0f2f1'},
+  {id:'pdfsplit',n:'Split PDF',d:'Extract specific pages from a PDF',i:'✂️',cat:'pdf',sub:'organize',c:'#BF360C',bg:'#fbe9e7'},
+  {id:'pdfpassword',n:'PDF Watermark',d:'Add watermark text to PDF pages',i:'🔏',cat:'pdf',sub:'security',c:'#4E342E',bg:'#efebe9'},
+  // Image
+  {id:'imgcompress',n:'Image Compressor',d:'Shrink image file size, keep quality',i:'🗜️',cat:'image',sub:'compress',c:'#1565C0',bg:'#e3f2fd',hot:1},
+  {id:'imgresize',n:'Image Resizer',d:'Resize to exact pixel dimensions',i:'↔️',cat:'image',sub:'resize',c:'#00695C',bg:'#e0f7fa'},
+  {id:'img2img',n:'Image Converter',d:'Convert between JPG, PNG, WebP',i:'🔄',cat:'image',sub:'convert',c:'#6A1B9A',bg:'#f3e5f5'},
+  {id:'imgbg',n:'Remove Background',d:'Auto-remove image background',i:'✂️',cat:'image',sub:'bg',c:'#BF360C',bg:'#fbe9e7',hot:1},
+  {id:'imggrayscale',n:'Grayscale Filter',d:'Convert image to black & white',i:'⚫',cat:'image',sub:'filter',c:'#424242',bg:'#f5f5f5'},
+  {id:'imgrotate',n:'Rotate / Flip',d:'Rotate or flip images 90°/180°',i:'🔃',cat:'image',sub:'resize',c:'#E65100',bg:'#fff3e0'},
+  {id:'imgwatermark',n:'Image Watermark',d:'Add text watermark to images',i:'💧',cat:'image',sub:'filter',c:'#1565C0',bg:'#e3f2fd'},
+  // Doc
+  {id:'txt2pdf',n:'Text to PDF',d:'Type text, export as clean PDF',i:'✏️',cat:'doc',sub:'convert',c:'#2E7D32',bg:'#e8f5e9'},
+  {id:'word2pdf',n:'Word to PDF',d:'Convert Word .docx to PDF',i:'📝',cat:'doc',sub:'convert',c:'#1565C0',bg:'#e3f2fd'},
+  // Text
+  {id:'caseconv',n:'Case Converter',d:'UPPER, lower, Title, camelCase...',i:'Aa',cat:'text',sub:'text',c:'#6A1B9A',bg:'#f3e5f5'},
+  {id:'wordcount',n:'Word Counter',d:'Count words, chars, reading time',i:'📊',cat:'text',sub:'text',c:'#00695C',bg:'#e0f7fa'},
+  {id:'base64',n:'Base64 Encoder',d:'Encode / decode Base64 text',i:'🔐',cat:'text',sub:'text',c:'#4E342E',bg:'#efebe9'},
+  {id:'textdiff',n:'Text Diff Checker',d:'Compare two texts, show changes',i:'🔍',cat:'text',sub:'text',c:'#E65100',bg:'#fff3e0'},
+  {id:'jsonformat',n:'JSON Formatter',d:'Prettify or minify JSON data',i:'{ }',cat:'text',sub:'text',c:'#1565C0',bg:'#e3f2fd'},
 ];
 
-function makeCard(t) {
-  const c = document.createElement('div');
-  c.className = 'tool-card';
-  c.style.setProperty('--tc', t.tc);
-  c.innerHTML = `
-    <div class="card-top">
-      <div class="card-icon">${t.icon}</div>
-      ${t.hot ? '<div class="card-badge">🔥 Popular</div>' : ''}
-    </div>
-    <div class="card-title">${t.title}</div>
-    <div class="card-desc">${t.desc}</div>
-    <div class="card-formats">${t.fmt.map(f=>`<span class="fmt-pill">${f}</span>`).join('')}</div>
-    <div class="card-arrow">→</div>
-  `;
-  c.onclick = () => openTool(t.id, t.title);
-  return c;
+function mkSmall(t){
+  const c=document.createElement('div');c.className='tcard';
+  c.style.setProperty('--card-c',t.c);
+  c.innerHTML=`${t.hot?'<div class="tcard-hot">Popular</div>':''}<div class="tcard-ico" style="background:${t.bg}">${t.i}</div><div class="tcard-name">${t.n}</div><div class="tcard-desc">${t.d}</div>`;
+  c.onclick=()=>openT(t.id);return c;
 }
-tools1.forEach(t => document.getElementById('grid1').appendChild(makeCard(t)));
-tools2.forEach(t => document.getElementById('grid2').appendChild(makeCard(t)));
-
-/* PANEL */
-let CF = null, CFs = [];
-function openTool(id, title) {
-  CF = null; CFs = [];
-  document.getElementById('panel-title').textContent = title;
-  document.getElementById('panel-body').innerHTML = '';
-  document.getElementById('overlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-  const builders = {
-    pdf2jpg, jpg2pdf, pdf2text, word2pdf, img2img, imgcompress, imgcrop,
-    pdfmerge, pdf2png, txt2pdf, caseconv, wordcount, base64, textdiff, jsonformat
-  };
-  if (builders[id]) builders[id](document.getElementById('panel-body'));
+function mkBig(t){
+  const c=document.createElement('div');c.className='bcard';
+  c.style.setProperty('--bc',t.c);
+  c.innerHTML=`<div class="bcard-ico" style="background:${t.bg}">${t.i}</div><div class="bcard-name">${t.n}</div><div class="bcard-desc">${t.d}</div><div class="bcard-link">Open Tool →</div>`;
+  c.onclick=()=>openT(t.id);return c;
 }
-function closePanel(e) {
-  if (e && e.target !== document.getElementById('overlay')) return;
-  document.getElementById('overlay').classList.remove('open');
-  document.body.style.overflow = '';
+function fillGrid(id,tools,big=false){
+  const g=document.getElementById(id);if(!g)return;g.innerHTML='';
+  tools.forEach(t=>g.appendChild(big?mkBig(t):mkSmall(t)));
+  if(!tools.length) g.innerHTML='<p style="color:var(--txt3);font-size:.84rem;padding:16px 0">No tools found.</p>';
 }
 
-/* TOAST */
-function toast(msg, ico='✅') {
-  const t = document.getElementById('toast');
-  document.getElementById('t-ico').textContent = ico;
-  document.getElementById('t-msg').textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3500);
+// Initial fill
+fillGrid('hg-pdf',T.filter(t=>t.cat==='pdf').slice(0,8));
+fillGrid('hg-img',T.filter(t=>t.cat==='image').slice(0,8));
+fillGrid('hg-doc',T.filter(t=>t.cat==='doc'));
+fillGrid('hg-txt',T.filter(t=>t.cat==='text'));
+fillGrid('pdf-grid',T.filter(t=>t.cat==='pdf'),true);
+fillGrid('img-grid',T.filter(t=>t.cat==='image'),true);
+fillGrid('doc-grid',[...T.filter(t=>t.cat==='doc'),...T.filter(t=>t.cat==='text')],true);
+
+/* Resume templates */
+const templates=[
+  {name:'Classic Professional',tag:'Corporate & Traditional',ico:'👔',grad:'linear-gradient(135deg,#1a237e,#283593)'},
+  {name:'Modern Minimal',tag:'Tech & Startups',ico:'💻',grad:'linear-gradient(135deg,#000,#1a1a1a)'},
+  {name:'Creative Bold',tag:'Design & Marketing',ico:'🎨',grad:'linear-gradient(135deg,#E8192C,#880E4F)'},
+  {name:'Executive Elite',tag:'Management & Finance',ico:'📊',grad:'linear-gradient(135deg,#1B5E20,#2E7D32)'},
+];
+const tg=document.getElementById('tmpl-grid');
+templates.forEach(t=>{
+  const c=document.createElement('div');c.className='tmpl-card';
+  c.innerHTML=`<div class="tmpl-prev" style="background:${t.grad}"><span style="font-size:2.5rem">${t.ico}</span><div class="tmpl-ov">Use This Template</div></div><div class="tmpl-info"><div class="tmpl-name">${t.name}</div><div class="tmpl-tag">${t.tag}</div></div>`;
+  c.onclick=()=>{showBuilder();notify('Template selected: '+t.name,'✅')};
+  tg.appendChild(c);
+});
+
+/* ── NAVIGATION ── */
+function goPage(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.nav-link').forEach(x=>x.classList.remove('active'));
+  const pg=document.getElementById('pg-'+p);
+  if(pg)pg.classList.add('on');
+  const nl=document.querySelector('.nav-link[data-p="'+p+'"]');
+  if(nl)nl.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function filterHome(cat,el){
+  document.querySelectorAll('.ctab').forEach(x=>x.classList.remove('on'));el.classList.add('on');
+  fillGrid('hg-pdf',cat==='all'?T.filter(t=>t.cat==='pdf').slice(0,8):cat==='pdf'?T.filter(t=>t.cat==='pdf'):[]);
+  fillGrid('hg-img',cat==='all'?T.filter(t=>t.cat==='image').slice(0,8):cat==='image'?T.filter(t=>t.cat==='image'):[]);
+  fillGrid('hg-doc',cat==='all'?T.filter(t=>t.cat==='doc'):cat==='doc'?T.filter(t=>t.cat==='doc'):[]);
+  fillGrid('hg-txt',cat==='all'?T.filter(t=>t.cat==='text'):cat==='text'?T.filter(t=>t.cat==='text'):[]);
+}
+function filterPdf(sub,el){
+  document.querySelectorAll('#pdf-tabs .ptab').forEach(x=>x.classList.remove('on'));el.classList.add('on');
+  fillGrid('pdf-grid',sub==='all'?T.filter(t=>t.cat==='pdf'):T.filter(t=>t.cat==='pdf'&&t.sub===sub),true);
+}
+function filterImg(sub,el){
+  document.querySelectorAll('#img-tabs .ptab').forEach(x=>x.classList.remove('on'));el.classList.add('on');
+  fillGrid('img-grid',sub==='all'?T.filter(t=>t.cat==='image'):T.filter(t=>t.cat==='image'&&t.sub===sub),true);
+}
+function doSearch(q){
+  if(!q.trim()){
+    fillGrid('hg-pdf',T.filter(t=>t.cat==='pdf').slice(0,8));
+    fillGrid('hg-img',T.filter(t=>t.cat==='image').slice(0,8));
+    fillGrid('hg-doc',T.filter(t=>t.cat==='doc'));
+    fillGrid('hg-txt',T.filter(t=>t.cat==='text'));
+    return;
+  }
+  const r=T.filter(t=>t.n.toLowerCase().includes(q.toLowerCase())||t.d.toLowerCase().includes(q.toLowerCase()));
+  fillGrid('hg-pdf',r.filter(t=>t.cat==='pdf'));
+  fillGrid('hg-img',r.filter(t=>t.cat==='image'));
+  fillGrid('hg-doc',r.filter(t=>['doc','text'].includes(t.cat)));
+  fillGrid('hg-txt',[]);
 }
 
-/* HELPERS */
-function fmtSize(b) {
-  if (b < 1024) return b + ' B';
-  if (b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
-  return (b/(1024*1024)).toFixed(1) + ' MB';
+/* ── TOOL MODAL ── */
+let CF=null,CFs=[];
+function openT(id){
+  CF=null;CFs=[];
+  const t=T.find(x=>x.id===id);
+  if(t){
+    document.getElementById('wico').style.background=t.bg;
+    document.getElementById('wico').textContent=t.i;
+    document.getElementById('wttl').textContent=t.n;
+  }
+  document.getElementById('wbody').innerHTML='';
+  document.getElementById('wk').classList.add('on');
+  document.body.style.overflow='hidden';
+  const fn={pdf2jpg,jpg2pdf,word2pdf,pdf2text,pdfmerge,pdfcompress,pdf2png,txt2pdf,pdfsplit,pdfpassword,imgcompress,imgresize,img2img,imgbg,imggrayscale,imgrotate,imgwatermark,caseconv,wordcount,base64,textdiff,jsonformat}[id];
+  if(fn) fn(document.getElementById('wbody'));
+  else document.getElementById('wbody').innerHTML='<p style="text-align:center;color:var(--txt2);padding:28px 0;font-size:.9rem">🚧 Coming soon! This tool is under development.</p>';
 }
-function fileToDataURL(f) {
-  return new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsDataURL(f); });
+function closeWk(e){
+  if(e&&e.target!==document.getElementById('wk'))return;
+  document.getElementById('wk').classList.remove('on');
+  document.body.style.overflow='';
 }
-function makeDZ(accept, multi, hint, cb) {
-  const w = document.createElement('div');
-  w.innerHTML = `<div class="dz" id="dz_main"><span class="dz-icon">📂</span>
-    <div class="dz-title">Drop file${multi?'s':''} here or click to browse</div>
-    <div class="dz-sub">${hint}</div>
-    <input type="file" accept="${accept}" ${multi?'multiple':''}></div>
-    <div class="file-chip" id="fc_main">
-      <div class="chip-ico">📄</div>
-      <div class="chip-info"><div class="chip-name" id="fc_name"></div><div class="chip-size" id="fc_sz"></div></div>
-      <button class="chip-rm">✕</button>
-    </div>`;
+
+/* ── HELPERS ── */
+function notify(m,i='✅'){
+  const t=document.getElementById('toast');
+  document.getElementById('tico').textContent=i;
+  document.getElementById('tmsg').textContent=m;
+  t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),3200);
+}
+function fs(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
+function f2url(f){return new Promise(r=>{const rd=new FileReader();rd.onload=e=>r(e.target.result);rd.readAsDataURL(f);})}
+
+function mkDZ(accept,multi,hint,cb){
+  const w=document.createElement('div');
+  w.innerHTML=`<div class="dz" id="dz_"><span class="dz-ico">📂</span><div class="dz-ttl">Drop file${multi?'s':''} here or click to browse</div><div class="dz-sub">${hint}</div><div class="dz-btn">Select File${multi?'s':''}</div><input type="file" accept="${accept}" ${multi?'multiple':''}></div><div class="fchip" id="fc_"><div class="fchip-ico">📄</div><div class="fchip-info"><div class="fchip-name" id="fcn_"></div><div class="fchip-sz" id="fcs_"></div></div><button class="fchip-rm">✕</button></div>`;
   setTimeout(()=>{
-    const inp=w.querySelector('input'),dz=w.querySelector('#dz_main'),fc=w.querySelector('#fc_main');
-    const onF = files => { cb(files); if(!files.length) return; fc.classList.add('show');
-      w.querySelector('#fc_name').textContent=files.length>1?`${files.length} files selected`:files[0].name;
-      w.querySelector('#fc_sz').textContent=files.length>1?fmtSize(Array.from(files).reduce((s,f)=>s+f.size,0)):fmtSize(files[0].size); };
+    const inp=w.querySelector('input'),dz=w.querySelector('#dz_'),fc=w.querySelector('#fc_');
+    const onF=files=>{if(!files.length)return;cb(files);if(fc)fc.classList.add('on');
+      const nn=w.querySelector('#fcn_'),ns=w.querySelector('#fcs_');
+      if(nn)nn.textContent=files.length>1?files.length+' files selected':files[0].name;
+      if(ns)ns.textContent=files.length>1?fs(Array.from(files).reduce((s,f)=>s+f.size,0)):fs(files[0].size);};
     inp.onchange=e=>onF(e.target.files);
-    dz.ondragover=e=>{e.preventDefault();dz.classList.add('over')};
-    dz.ondragleave=()=>dz.classList.remove('over');
-    dz.ondrop=e=>{e.preventDefault();dz.classList.remove('over');onF(e.dataTransfer.files);};
-    w.querySelector('.chip-rm').onclick=()=>{CF=null;CFs=[];fc.classList.remove('show');inp.value='';};
+    dz.ondragover=e=>{e.preventDefault();dz.classList.add('ov')};
+    dz.ondragleave=()=>dz.classList.remove('ov');
+    dz.ondrop=e=>{e.preventDefault();dz.classList.remove('ov');onF(e.dataTransfer.files)};
+    const rm=w.querySelector('.fchip-rm');if(rm)rm.onclick=()=>{CF=null;CFs=[];if(fc)fc.classList.remove('on');inp.value=''};
   },10);
   return w;
 }
-function makeProg() {
-  const d = document.createElement('div'); d.className='prog-wrap';
-  d.innerHTML=`<div class="prog-track"><div class="prog-fill" id="pf"></div></div><div class="prog-lbl" id="pl">Processing...</div>`;
-  return d;
-}
-function makeResult() {
-  const d = document.createElement('div'); d.className='result';
-  d.innerHTML=`<div class="result-ico">🎉</div><div class="result-title">Done!</div><div class="result-sub" id="rsub"></div><a id="dllink" class="dl-btn">⬇ Download</a>`;
-  return d;
-}
-function setP(pw, pct, lbl) {
-  pw.classList.add('show');
-  pw.querySelector('#pf').style.width=pct+'%';
-  if(lbl) pw.querySelector('#pl').textContent=lbl;
-}
-function showR(rw, sub, blob, filename) {
-  rw.classList.add('show');
-  rw.querySelector('#rsub').textContent=sub;
-  const a=rw.querySelector('#dllink'); a.href=URL.createObjectURL(blob); a.download=filename;
-}
-function makeCvtBtn(label, fn) {
-  const b=document.createElement('button'); b.className='cvt-btn'; b.textContent=label; b.onclick=fn; return b;
-}
+function mkPg(){const d=document.createElement('div');d.className='prog';d.innerHTML='<div class="prog-track"><div class="prog-fill" id="pfl"></div></div><div class="prog-lbl" id="plb">Processing...</div>';return d;}
+function mkRs(){const d=document.createElement('div');d.className='res';d.innerHTML='<div class="res-ico">✅</div><div class="res-title">Conversion Complete!</div><div class="res-sub" id="rsb_"></div><button class="dlbtn" id="dlb_">⬇ Download File</button>';return d;}
+function setP(pw,p,l){pw.classList.add('on');pw.querySelector('#pfl').style.width=p+'%';if(l)pw.querySelector('#plb').textContent=l;}
+function showR(rw,sub,blob,fn){rw.classList.add('on');rw.querySelector('#rsb_').textContent=sub;const b=rw.querySelector('#dlb_');const url=URL.createObjectURL(blob);b.onclick=()=>{const a=document.createElement('a');a.href=url;a.download=fn;a.click()};}
+function mkBtn(l,fn){const b=document.createElement('button');b.className='cvbtn';b.textContent=l;b.onclick=fn;return b;}
 
-/* ═══════════ TOOL BUILDERS ═══════════ */
-
-function pdf2jpg(body) {
-  body.appendChild(makeDZ('.pdf',false,'PDF files accepted',f=>{CF=f[0]}));
-  const opts=document.createElement('div'); opts.className='opts';
-  opts.innerHTML=`<div class="opt"><div class="opt-lbl">Scale / Quality</div>
-    <select id="pj_s"><option value="2">2× High Quality</option><option value="1.5">1.5× Medium</option><option value="1">1× Standard</option></select></div>
-    <div class="opt"><div class="opt-lbl">Output Format</div>
-    <select id="pj_f"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option></select></div>`;
-  body.appendChild(opts);
-  const pw=makeProg(),rw=makeResult();
-  body.appendChild(makeCvtBtn('🚀 Convert PDF to Images', async()=>{
-    if(!CF) return toast('Select a PDF first','⚠️');
-    const sc=parseFloat(document.getElementById('pj_s').value);
-    const fmt=document.getElementById('pj_f').value;
-    const ext=fmt==='image/jpeg'?'jpg':'png';
-    try {
-      setP(pw,10,'Loading PDF...');
-      const pdf=await pdfjsLib.getDocument(await CF.arrayBuffer()).promise;
-      if(pdf.numPages===1){
-        setP(pw,50,'Rendering...');
-        const pg=await pdf.getPage(1); const vp=pg.getViewport({scale:sc});
-        const cv=document.createElement('canvas'); cv.width=vp.width; cv.height=vp.height;
-        await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
-        setP(pw,90,'Saving...');
-        cv.toBlob(blob=>{setP(pw,100,'Done!');showR(rw,`Page 1 converted to ${ext.toUpperCase()}`,blob,`page1.${ext}`);toast('Converted! 🎉');},fmt,0.95);
-      } else {
-        const {jsPDF}=window.jspdf; const doc=new jsPDF();
-        for(let i=1;i<=pdf.numPages;i++){
-          setP(pw,10+(i/pdf.numPages)*85,`Page ${i} of ${pdf.numPages}...`);
-          const pg=await pdf.getPage(i); const vp=pg.getViewport({scale:1.5});
-          const cv=document.createElement('canvas'); cv.width=vp.width; cv.height=vp.height;
+/* ═══════════════ PDF TOOLS ═══════════════ */
+function pdf2jpg(body){
+  body.appendChild(mkDZ('.pdf',false,'PDF files accepted',f=>{CF=f[0]}));
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt"><div class="opt-label">Quality</div><select id="pq"><option value="2">High (2×)</option><option value="1.5">Medium (1.5×)</option><option value="1">Standard (1×)</option></select></div><div class="opt"><div class="opt-label">Format</div><select id="pf"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option></select></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Convert PDF to Images',async()=>{
+    if(!CF)return notify('Select a PDF first','⚠️');
+    const sc=parseFloat(document.getElementById('pq').value),fmt=document.getElementById('pf').value,ext=fmt==='image/jpeg'?'jpg':'png';
+    try{setP(pw,10,'Loading PDF...');const pdf=await pdfjsLib.getDocument(await CF.arrayBuffer()).promise;
+      if(pdf.numPages===1){setP(pw,50,'Rendering...');const pg=await pdf.getPage(1);const vp=pg.getViewport({scale:sc});
+        const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+        await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;setP(pw,90,'Saving...');
+        cv.toBlob(b=>{setP(pw,100,'Done!');showR(rw,'Page 1 converted to '+ext.toUpperCase(),b,'page1.'+ext);notify('Done! ✨')},fmt,.95);
+      }else{const{jsPDF}=window.jspdf;const doc=new jsPDF();
+        for(let i=1;i<=pdf.numPages;i++){setP(pw,10+(i/pdf.numPages)*85,'Page '+i+'/'+pdf.numPages);
+          const pg=await pdf.getPage(i);const vp=pg.getViewport({scale:1.5});
+          const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
           await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
-          if(i>1)doc.addPage(); doc.addImage(cv.toDataURL('image/jpeg',.9),'JPEG',10,10,190,190*vp.height/vp.width);
-        }
-        setP(pw,100,'Done!');
-        showR(rw,`${pdf.numPages} pages packaged`,doc.output('blob'),'pages.pdf');
-        toast(`${pdf.numPages} pages converted!`);
-      }
-    } catch(e){toast('Error: '+e.message,'❌');}
-  }));
-  body.appendChild(pw); body.appendChild(rw);
+          if(i>1)doc.addPage();doc.addImage(cv.toDataURL('image/jpeg',.9),'JPEG',10,10,190,190*vp.height/vp.width);}
+        setP(pw,100,'Done!');showR(rw,pdf.numPages+' pages packaged',doc.output('blob'),'pages.pdf');notify(pdf.numPages+' pages done!');}
+    }catch(e){notify('Error: '+e.message,'❌');}
+  }));body.appendChild(pw);body.appendChild(rw);
 }
 
-function jpg2pdf(body) {
-  body.appendChild(makeDZ('.jpg,.jpeg,.png,.webp,.gif',true,'Select images — multiple allowed',f=>{CFs=Array.from(f)}));
-  const opts=document.createElement('div'); opts.className='opts';
-  opts.innerHTML=`<div class="opt"><div class="opt-lbl">Page Size</div>
-    <select id="ip_sz"><option>a4</option><option>letter</option><option>a3</option></select></div>
-    <div class="opt"><div class="opt-lbl">Orientation</div>
-    <select id="ip_or"><option>portrait</option><option>landscape</option></select></div>`;
-  body.appendChild(opts);
-  const pw=makeProg(),rw=makeResult();
-  body.appendChild(makeCvtBtn('🚀 Create PDF from Images', async()=>{
-    if(!CFs.length) return toast('Select images first','⚠️');
-    const {jsPDF}=window.jspdf;
-    const doc=new jsPDF({orientation:document.getElementById('ip_or').value,unit:'mm',format:document.getElementById('ip_sz').value});
+function jpg2pdf(body){
+  body.appendChild(mkDZ('.jpg,.jpeg,.png,.webp,.gif',true,'Select images — multiple allowed',f=>{CFs=Array.from(f)}));
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt"><div class="opt-label">Page Size</div><select id="is"><option>a4</option><option>letter</option><option>a3</option></select></div><div class="opt"><div class="opt-label">Orientation</div><select id="io"><option>portrait</option><option>landscape</option></select></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Create PDF from Images',async()=>{
+    if(!CFs.length)return notify('Select images first','⚠️');
+    const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:document.getElementById('io').value,unit:'mm',format:document.getElementById('is').value});
     setP(pw,5,'Starting...');
-    for(let i=0;i<CFs.length;i++){
-      setP(pw,5+(i/CFs.length)*90,`Image ${i+1}/${CFs.length}...`);
-      const du=await fileToDataURL(CFs[i]);
-      const pr=doc.getImageProperties(du);
-      const pW=doc.internal.pageSize.getWidth()-20;
-      const pH=(pr.height/pr.width)*pW;
-      if(i>0)doc.addPage();
-      doc.addImage(du,pr.fileType||'JPEG',10,10,pW,Math.min(pH,doc.internal.pageSize.getHeight()-20));
-    }
-    setP(pw,100,'Done!');
-    showR(rw,`${CFs.length} images merged into PDF`,doc.output('blob'),'images.pdf');
-    toast('PDF created!');
-  }));
-  body.appendChild(pw); body.appendChild(rw);
+    for(let i=0;i<CFs.length;i++){setP(pw,5+(i/CFs.length)*90,'Image '+(i+1)+'/'+CFs.length+'...');
+      const du=await f2url(CFs[i]);const pr=doc.getImageProperties(du);
+      const pW=doc.internal.pageSize.getWidth()-20;const pH=(pr.height/pr.width)*pW;
+      if(i>0)doc.addPage();doc.addImage(du,pr.fileType||'JPEG',10,10,pW,Math.min(pH,doc.internal.pageSize.getHeight()-20));}
+    setP(pw,100,'Done!');showR(rw,CFs.length+' images merged into PDF',doc.output('blob'),'images.pdf');notify('PDF created!');
+  }));body.appendChild(pw);body.appendChild(rw);
 }
 
-function pdf2text(body) {
-  body.appendChild(makeDZ('.pdf',false,'PDF files — text will be extracted',f=>{CF=f[0]}));
-  const pw=makeProg();
-  const outWrap=document.createElement('div'); outWrap.id='ptw'; outWrap.style.display='none';
-  outWrap.innerHTML=`<div class="divider"></div><div class="field-lbl">Extracted Text</div>
-    <textarea class="out" id="pt_out" style="min-height:180px" readonly></textarea>
-    <button class="copy-btn" id="pt_cp">📋 Copy to Clipboard</button>`;
-  body.appendChild(makeCvtBtn('📑 Extract Text', async()=>{
-    if(!CF) return toast('Select a PDF','⚠️');
-    setP(pw,10,'Loading...');
-    try {
-      const pdf=await pdfjsLib.getDocument(await CF.arrayBuffer()).promise;
-      let txt='';
-      for(let i=1;i<=pdf.numPages;i++){
-        setP(pw,10+(i/pdf.numPages)*85,`Page ${i}/${pdf.numPages}...`);
-        const pg=await pdf.getPage(i);
-        const tc=await pg.getTextContent();
-        txt+=`\n━━ Page ${i} ━━\n`+tc.items.map(s=>s.str).join(' ')+'\n';
-      }
-      setP(pw,100,'Done!');
-      outWrap.style.display='block';
-      document.getElementById('pt_out').value=txt.trim();
-      document.getElementById('pt_cp').onclick=()=>{navigator.clipboard.writeText(txt.trim());toast('Copied!','📋')};
-      toast('Text extracted!');
-    } catch(e){toast('Error: '+e.message,'❌');}
-  }));
-  body.appendChild(pw); body.appendChild(outWrap);
+function pdf2text(body){
+  body.appendChild(mkDZ('.pdf',false,'PDF to extract text from',f=>{CF=f[0]}));
+  const pw=mkPg();const out=document.createElement('div');out.style.display='none';
+  out.innerHTML='<div class="divider"></div><div class="flbl" style="margin-bottom:5px">Extracted Text</div><textarea class="out-ta" id="pto" style="min-height:160px" readonly></textarea><div class="copy-row"><button class="cpbtn" id="ptdl">⬇ Download .txt</button><button class="cpbtn" id="ptcp">📋 Copy</button></div>';
+  body.appendChild(mkBtn('Extract Text from PDF',async()=>{
+    if(!CF)return notify('Select a PDF','⚠️');setP(pw,10,'Loading...');
+    try{const pdf=await pdfjsLib.getDocument(await CF.arrayBuffer()).promise;let txt='';
+      for(let i=1;i<=pdf.numPages;i++){setP(pw,10+(i/pdf.numPages)*85,'Page '+i+'/'+pdf.numPages);
+        const pg=await pdf.getPage(i);const tc=await pg.getTextContent();
+        txt+='\n— Page '+i+' —\n'+tc.items.map(s=>s.str).join(' ')+'\n';}
+      setP(pw,100,'Done!');out.style.display='block';document.getElementById('pto').value=txt.trim();
+      document.getElementById('ptcp').onclick=()=>{navigator.clipboard.writeText(txt.trim());notify('Copied!','📋')};
+      document.getElementById('ptdl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));a.download='extracted.txt';a.click()};
+      notify('Text extracted!');
+    }catch(e){notify('Error: '+e.message,'❌');}
+  }));body.appendChild(pw);body.appendChild(out);
 }
 
-function word2pdf(body) {
-  body.appendChild(makeDZ('.docx',false,'Word .docx files only',f=>{CF=f[0]}));
-  const opts=document.createElement('div'); opts.className='opts';
-  opts.innerHTML=`<div class="opt"><div class="opt-lbl">Font Size</div>
-    <select id="w2p_fs"><option value="11">11pt</option><option value="12" selected>12pt</option><option value="14">14pt</option></select></div>
-    <div class="opt"><div class="opt-lbl">Page Size</div>
-    <select id="w2p_pg"><option>a4</option><option>letter</option></select></div>`;
-  body.appendChild(opts);
-  const pw=makeProg(),rw=makeResult();
-  body.appendChild(makeCvtBtn('📝 Convert to PDF', async()=>{
-    if(!CF) return toast('Select a .docx file','⚠️');
-    setP(pw,20,'Reading Word doc...');
-    try {
-      const res=await mammoth.convertToHtml({arrayBuffer:await CF.arrayBuffer()});
-      setP(pw,55,'Building PDF...');
-      const {jsPDF}=window.jspdf;
-      const fs=parseInt(document.getElementById('w2p_fs').value);
-      const doc=new jsPDF({unit:'mm',format:document.getElementById('w2p_pg').value});
-      const div=document.createElement('div'); div.innerHTML=res.value;
-      const text=div.innerText||div.textContent;
-      doc.setFontSize(fs).setFont('helvetica','normal').setTextColor(40,40,40);
-      const lines=doc.splitTextToSize(text,175);
-      let y=20; const lh=fs*0.42;
+function word2pdf(body){
+  body.appendChild(mkDZ('.docx',false,'Word .docx files only',f=>{CF=f[0]}));
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt"><div class="opt-label">Font Size</div><select id="wfs"><option value="11">11pt</option><option value="12" selected>12pt</option><option value="14">14pt</option></select></div><div class="opt"><div class="opt-label">Page Size</div><select id="wpg"><option>a4</option><option>letter</option></select></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Convert Word to PDF',async()=>{
+    if(!CF)return notify('Select a .docx file','⚠️');setP(pw,20,'Reading document...');
+    try{const res=await mammoth.convertToHtml({arrayBuffer:await CF.arrayBuffer()});setP(pw,55,'Generating PDF...');
+      const{jsPDF}=window.jspdf;const fz=parseInt(document.getElementById('wfs').value);
+      const doc=new jsPDF({unit:'mm',format:document.getElementById('wpg').value});
+      const div=document.createElement('div');div.innerHTML=res.value;const text=div.innerText||div.textContent;
+      doc.setFontSize(fz).setFont('helvetica','normal').setTextColor(40,40,40);
+      const lines=doc.splitTextToSize(text,175);let y=20;const lh=fz*0.42;
       lines.forEach(l=>{if(y+lh>280){doc.addPage();y=20;}doc.text(l,17,y);y+=lh;});
-      setP(pw,100,'Done!');
-      showR(rw,'Word document converted to PDF',doc.output('blob'),CF.name.replace('.docx','.pdf'));
-      toast('Converted!');
-    } catch(e){toast('Error: '+e.message,'❌');}
-  }));
-  body.appendChild(pw); body.appendChild(rw);
+      setP(pw,100,'Done!');showR(rw,'Word document converted to PDF',doc.output('blob'),CF.name.replace('.docx','.pdf'));notify('Converted!');
+    }catch(e){notify('Error: '+e.message,'❌');}
+  }));body.appendChild(pw);body.appendChild(rw);
 }
 
-function img2img(body) {
-  body.appendChild(makeDZ('.jpg,.jpeg,.png,.webp,.gif',false,'Single image to convert',f=>{CF=f[0]}));
-  const opts=document.createElement('div'); opts.className='opts';
-  opts.innerHTML=`<div class="opt"><div class="opt-lbl">Output Format</div>
-    <select id="ii_f"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></div>
-    <div class="opt"><div class="opt-lbl">Quality</div>
-    <select id="ii_q"><option value="0.95">95% Best</option><option value="0.85">85% High</option><option value="0.7">70% Medium</option><option value="0.5">50% Low</option></select></div>`;
-  body.appendChild(opts);
-  const pw=makeProg(),rw=makeResult();
-  body.appendChild(makeCvtBtn('🔄 Convert Image', async()=>{
-    if(!CF) return toast('Select an image','⚠️');
-    const fmt=document.getElementById('ii_f').value;
-    const q=parseFloat(document.getElementById('ii_q').value);
-    const ext=fmt.split('/')[1];
-    setP(pw,30,'Loading...');
-    const img=new Image(); img.src=URL.createObjectURL(CF);
-    img.onload=()=>{
-      setP(pw,65,'Converting...');
-      const c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
-      c.getContext('2d').drawImage(img,0,0);
-      c.toBlob(blob=>{setP(pw,100,'Done!');showR(rw,`Converted to ${ext.toUpperCase()} (${fmtSize(blob.size)})`,blob,'converted.'+ext);toast('Done!');},fmt,q);
-    };
-  }));
-  body.appendChild(pw); body.appendChild(rw);
+function pdfmerge(body){
+  body.appendChild(mkDZ('.pdf',true,'Select 2 or more PDF files',f=>{CFs=Array.from(f)}));
+  const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Merge PDFs',async()=>{
+    if(CFs.length<2)return notify('Select at least 2 PDFs','⚠️');
+    const{jsPDF}=window.jspdf;const doc=new jsPDF();let fp=true;setP(pw,5,'Starting...');
+    try{for(let fi=0;fi<CFs.length;fi++){setP(pw,5+(fi/CFs.length)*90,'PDF '+(fi+1)+'/'+CFs.length+'...');
+      const pdf=await pdfjsLib.getDocument(await CFs[fi].arrayBuffer()).promise;
+      for(let p=1;p<=pdf.numPages;p++){const pg=await pdf.getPage(p);const vp=pg.getViewport({scale:1.5});
+        const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+        await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+        if(!fp)doc.addPage();fp=false;doc.addImage(cv.toDataURL('image/jpeg',.88),'JPEG',10,10,190,190*vp.height/vp.width);}}
+      setP(pw,100,'Done!');showR(rw,CFs.length+' PDFs merged',doc.output('blob'),'merged.pdf');notify('PDFs merged!');
+    }catch(e){notify('Error: '+e.message,'❌');}
+  }));body.appendChild(pw);body.appendChild(rw);
 }
 
-function imgcompress(body) {
-  body.appendChild(makeDZ('.jpg,.jpeg,.png,.webp',false,'Image to compress',f=>{CF=f[0]}));
-  const opts=document.createElement('div'); opts.className='opts';
-  opts.innerHTML=`<div class="opt"><div class="opt-lbl">Compression Level</div>
-    <select id="ic_l"><option value="0.9">Light — 90%</option><option value="0.75" selected>Medium — 75%</option><option value="0.55">Heavy — 55%</option><option value="0.35">Max — 35%</option></select></div>`;
-  body.appendChild(opts);
-  const pw=makeProg(),rw=makeResult();
-  body.appendChild(makeCvtBtn('🗜️ Compress Image', async()=>{
-    if(!CF) return toast('Select an image','⚠️');
-    const q=parseFloat(document.getElementById('ic_l').value);
-    setP(pw,40,'Compressing...');
-    const img=new Image(); img.src=URL.createObjectURL(CF);
-    img.onload=()=>{
-      const c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
-      c.getContext('2d').drawImage(img,0,0);
-      c.toBlob(blob=>{
-        setP(pw,100,'Done!');
-        const saved=((CF.size-blob.size)/CF.size*100).toFixed(0);
-        showR(rw,`Saved ${saved}% — ${fmtSize(CF.size)} → ${fmtSize(blob.size)}`,blob,'compressed_'+CF.name.replace(/\.[^.]+$/,'.jpg'));
-        toast(`Compressed! Saved ${saved}%`);
-      },'image/jpeg',q);
-    };
-  }));
-  body.appendChild(pw); body.appendChild(rw);
+function pdfcompress(body){
+  body.appendChild(mkDZ('.pdf',false,'PDF to compress',f=>{CF=f[0]}));
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt"><div class="opt-label">Compression Level</div><select id="pcl"><option value="0.65">Light — Best Quality</option><option value="0.42" selected>Medium — Balanced</option><option value="0.22">High — Smallest Size</option></select></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Compress PDF',async()=>{
+    if(!CF)return notify('Select a PDF','⚠️');const q=parseFloat(document.getElementById('pcl').value);
+    setP(pw,10,'Loading...');
+    try{const pdf=await pdfjsLib.getDocument(await CF.arrayBuffer()).promise;
+      const{jsPDF}=window.jspdf;const doc=new jsPDF();
+      for(let i=1;i<=pdf.numPages;i++){setP(pw,10+(i/pdf.numPages)*85,'Page '+i+'/'+pdf.numPages+'...');
+        const pg=await pdf.getPage(i);const vp=pg.getViewport({scale:1.2});
+        const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+        await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+        if(i>1)doc.addPage();doc.addImage(cv.toDataURL('image/jpeg',q),'JPEG',0,0,210,297);}
+      setP(pw,100,'Done!');const blob=doc.output('blob');
+      const sv=Math.max(0,((CF.size-blob.size)/CF.size*100).toFixed(0));
+      showR(rw,'Reduced by ~'+sv+'% ('+fs(CF.size)+' → '+fs(blob.size)+')',blob,'compressed.pdf');notify('Compressed! Saved ~'+sv+'%');
+    }catch(e){notify('Error: '+e.message,'❌');}
+  }));body.appendChild(pw);body.appendChild(rw);
 }
 
-function imgcrop(body) {
-  body.appendChild(makeDZ('.jpg,.jpeg,.png,.webp',false,'Image to resize',f=>{CF=f[0]}));
-  const opts=document.createElement('div'); opts.className='opts';
-  opts.innerHTML=`<div class="opt"><div class="opt-lbl">Width (px)</div><input type="number" id="rw" placeholder="e.g. 800"></div>
-    <div class="opt"><div class="opt-lbl">Height (px)</div><input type="number" id="rh" placeholder="Auto-calculate"></div>
-    <div class="opt"><div class="opt-lbl">Format</div>
-    <select id="rfmt"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option></select></div>`;
-  body.appendChild(opts);
-  const pw=makeProg(),rw=makeResult();
-  body.appendChild(makeCvtBtn('✂️ Resize Image', async()=>{
-    if(!CF) return toast('Select an image','⚠️');
-    const tw=parseInt(document.getElementById('rw').value);
-    if(!tw) return toast('Enter a width','⚠️');
-    const fmt=document.getElementById('rfmt').value; const ext=fmt.split('/')[1];
-    setP(pw,30,'Loading...');
-    const img=new Image(); img.src=URL.createObjectURL(CF);
-    img.onload=()=>{
-      const th=parseInt(document.getElementById('rh').value)||Math.round(tw*(img.height/img.width));
-      const c=document.createElement('canvas'); c.width=tw; c.height=th;
-      c.getContext('2d').drawImage(img,0,0,tw,th);
-      c.toBlob(blob=>{setP(pw,100,'Done!');showR(rw,`Resized to ${tw}×${th}px`,blob,`resized_${tw}x${th}.${ext}`);toast('Resized!');},fmt,.95);
-    };
-  }));
-  body.appendChild(pw); body.appendChild(rw);
-}
-
-function pdfmerge(body) {
-  body.appendChild(makeDZ('.pdf',true,'Select 2 or more PDFs to merge',f=>{CFs=Array.from(f)}));
-  const pw=makeProg(),rw=makeResult();
-  body.appendChild(makeCvtBtn('📎 Merge PDFs', async()=>{
-    if(CFs.length<2) return toast('Select at least 2 PDFs','⚠️');
-    const {jsPDF}=window.jspdf; const doc=new jsPDF();
-    let fp=true;
-    setP(pw,5,'Starting...');
-    try {
-      for(let fi=0;fi<CFs.length;fi++){
-        setP(pw,5+(fi/CFs.length)*90,`PDF ${fi+1} of ${CFs.length}...`);
-        const pdf=await pdfjsLib.getDocument(await CFs[fi].arrayBuffer()).promise;
-        for(let p=1;p<=pdf.numPages;p++){
-          const pg=await pdf.getPage(p); const vp=pg.getViewport({scale:1.5});
-          const cv=document.createElement('canvas'); cv.width=vp.width; cv.height=vp.height;
-          await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
-          if(!fp)doc.addPage(); fp=false;
-          doc.addImage(cv.toDataURL('image/jpeg',.88),'JPEG',10,10,190,190*vp.height/vp.width);
-        }
-      }
-      setP(pw,100,'Done!');
-      showR(rw,`${CFs.length} PDFs merged successfully`,doc.output('blob'),'merged.pdf');
-      toast('PDFs merged!');
-    } catch(e){toast('Error: '+e.message,'❌');}
-  }));
-  body.appendChild(pw); body.appendChild(rw);
-}
-
-function pdf2png(body) {
-  body.appendChild(makeDZ('.pdf',false,'PDF to export as PNG',f=>{CF=f[0]}));
-  const opts=document.createElement('div'); opts.className='opts';
-  opts.innerHTML=`<div class="opt"><div class="opt-lbl">Scale</div>
-    <select id="pp_s"><option value="3">3× Ultra</option><option value="2" selected>2× High</option><option value="1.5">1.5×</option></select></div>`;
-  body.appendChild(opts);
-  const pw=makeProg(),rw=makeResult();
-  body.appendChild(makeCvtBtn('🖼️ Export to PNG', async()=>{
-    if(!CF) return toast('Select a PDF','⚠️');
-    const sc=parseFloat(document.getElementById('pp_s').value);
+function pdf2png(body){
+  body.appendChild(mkDZ('.pdf',false,'PDF — first page exported as PNG',f=>{CF=f[0]}));
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt"><div class="opt-label">Resolution</div><select id="pps"><option value="3">3× Ultra HD</option><option value="2" selected>2× High</option><option value="1.5">1.5× Standard</option></select></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Export to PNG',async()=>{
+    if(!CF)return notify('Select a PDF','⚠️');const sc=parseFloat(document.getElementById('pps').value);
     setP(pw,20,'Loading...');
-    try {
-      const pdf=await pdfjsLib.getDocument(await CF.arrayBuffer()).promise;
-      const pg=await pdf.getPage(1); const vp=pg.getViewport({scale:sc});
-      const cv=document.createElement('canvas'); cv.width=vp.width; cv.height=vp.height;
-      setP(pw,60,'Rendering...');
+    try{const pdf=await pdfjsLib.getDocument(await CF.arrayBuffer()).promise;const pg=await pdf.getPage(1);const vp=pg.getViewport({scale:sc});
+      const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;setP(pw,60,'Rendering...');
       await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
-      cv.toBlob(blob=>{setP(pw,100,'Done!');showR(rw,'Page 1 exported as PNG',blob,'page1.png');toast('PNG created!');;},'image/png');
-    } catch(e){toast('Error: '+e.message,'❌');}
-  }));
-  body.appendChild(pw); body.appendChild(rw);
+      cv.toBlob(b=>{setP(pw,100,'Done!');showR(rw,'First page exported as PNG',b,'page1.png');notify('PNG ready!')},'image/png');
+    }catch(e){notify('Error: '+e.message,'❌');}
+  }));body.appendChild(pw);body.appendChild(rw);
 }
 
-function txt2pdf(body) {
-  const lbl=document.createElement('div'); lbl.innerHTML='<div class="field-lbl" style="margin-bottom:6px">Your Text</div>';
-  body.appendChild(lbl);
-  const ta=document.createElement('textarea'); ta.placeholder='Type or paste your content here...\nMultiple paragraphs, lists — anything!'; ta.style.minHeight='160px';
-  body.appendChild(ta);
-  const opts=document.createElement('div'); opts.className='opts';
-  opts.innerHTML=`<div class="opt"><div class="opt-lbl">Font Size</div>
-    <select id="tp_f"><option value="11">11pt</option><option value="12" selected>12pt</option><option value="14">14pt</option></select></div>
-    <div class="opt"><div class="opt-lbl">Page</div><select id="tp_p"><option>a4</option><option>letter</option></select></div>
-    <div class="opt"><div class="opt-lbl">Title (optional)</div><input type="text" id="tp_t" placeholder="Document title..."></div>`;
-  body.appendChild(opts);
-  const pw=makeProg(),rw=makeResult();
-  body.appendChild(makeCvtBtn('📄 Generate PDF', ()=>{
-    const txt=ta.value.trim(); if(!txt) return toast('Enter some text','⚠️');
-    const {jsPDF}=window.jspdf;
-    const fs=parseInt(document.getElementById('tp_f').value);
-    const pg=document.getElementById('tp_p').value;
-    const title=document.getElementById('tp_t').value;
-    const doc=new jsPDF({unit:'mm',format:pg});
-    let y=20;
-    if(title){doc.setFontSize(fs+7).setFont('helvetica','bold').setTextColor(20,20,20);doc.text(title,17,y);y+=12;doc.setFont('helvetica','normal');}
-    doc.setFontSize(fs).setTextColor(50,50,50);
-    const lines=doc.splitTextToSize(txt,175); const lh=fs*0.43;
-    setP(pw,50,'Building...');
+function txt2pdf(body){
+  const l=document.createElement('div');l.innerHTML='<div class="flbl" style="margin-bottom:5px">Your Text</div>';body.appendChild(l);
+  const ta=document.createElement('textarea');ta.placeholder='Type or paste your content here...';ta.style.minHeight='140px';body.appendChild(ta);
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt"><div class="opt-label">Font Size</div><select id="tpf"><option value="11">11pt</option><option value="12" selected>12pt</option><option value="14">14pt</option></select></div><div class="opt"><div class="opt-label">Page</div><select id="tpp"><option>a4</option><option>letter</option></select></div><div class="opt"><div class="opt-label">Title (optional)</div><input class="oi" id="tpt" placeholder="Document title..."></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Generate PDF',()=>{
+    const txt=ta.value.trim();if(!txt)return notify('Enter some text','⚠️');
+    const{jsPDF}=window.jspdf;const fz=parseInt(document.getElementById('tpf').value);
+    const doc=new jsPDF({unit:'mm',format:document.getElementById('tpp').value});
+    const title=document.getElementById('tpt').value;let y=20;
+    if(title){doc.setFontSize(fz+6).setFont('helvetica','bold').setTextColor(20,20,20);doc.text(title,17,y);y+=12;}
+    doc.setFontSize(fz).setFont('helvetica','normal').setTextColor(50,50,50);
+    const lines=doc.splitTextToSize(txt,175);const lh=fz*0.43;setP(pw,50,'Building...');
     lines.forEach(l=>{if(y+lh>280){doc.addPage();y=20;}doc.text(l,17,y);y+=lh;});
-    setP(pw,100,'Done!');
-    showR(rw,`PDF with ${lines.length} lines`,doc.output('blob'),(title||'document')+'.pdf');
-    toast('PDF created!');
-  }));
-  body.appendChild(pw); body.appendChild(rw);
+    setP(pw,100,'Done!');showR(rw,'PDF created',doc.output('blob'),(title||'document')+'.pdf');notify('PDF created!');
+  }));body.appendChild(pw);body.appendChild(rw);
 }
 
-function caseconv(body) {
-  const lbl=document.createElement('div'); lbl.innerHTML='<div class="field-lbl" style="margin-bottom:6px">Input Text</div>';
-  body.appendChild(lbl);
-  const ta=document.createElement('textarea'); ta.placeholder='Paste your text here...'; ta.style.minHeight='100px';
-  body.appendChild(ta);
-  const row=document.createElement('div'); row.className='action-row';
-  const cases=[['UPPERCASE','upper'],['lowercase','lower'],['Title Case','title'],['Sentence case','sentence'],['camelCase','camel'],['snake_case','snake'],['kebab-case','kebab']];
-  const outWrap=document.createElement('div'); outWrap.style.marginTop='1rem'; outWrap.style.display='none';
-  outWrap.innerHTML='<div class="field-lbl" style="margin-bottom:6px">Result</div><textarea class="out" id="co_out" style="min-height:90px" readonly></textarea><button class="copy-btn" id="co_cp">📋 Copy</button>';
-  cases.forEach(([l,t])=>{
-    const b=document.createElement('button'); b.className='ac-btn'; b.textContent=l;
-    b.onclick=()=>{
-      document.querySelectorAll('.ac-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
-      const txt=ta.value; let r=txt;
-      if(t==='upper')r=txt.toUpperCase();
-      else if(t==='lower')r=txt.toLowerCase();
-      else if(t==='title')r=txt.replace(/\w\S*/g,w=>w[0].toUpperCase()+w.slice(1).toLowerCase());
-      else if(t==='sentence')r=txt.replace(/(^\s*\w|[.!?]\s*\w)/g,c=>c.toUpperCase());
-      else if(t==='camel')r=txt.toLowerCase().replace(/[^a-z0-9]+(\w)/g,(_,c)=>c.toUpperCase());
-      else if(t==='snake')r=txt.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
-      else if(t==='kebab')r=txt.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-      outWrap.style.display='block'; document.getElementById('co_out').value=r;
-      document.getElementById('co_cp').onclick=()=>{navigator.clipboard.writeText(r);toast('Copied!','📋');};
-    };
-    row.appendChild(b);
-  });
-  body.appendChild(row); body.appendChild(outWrap);
+function pdfsplit(body){
+  body.appendChild(mkDZ('.pdf',false,'Select PDF to split',f=>{CF=f[0]}));
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt"><div class="opt-label">Extract Page Number</div><input class="oi" id="spn" type="number" min="1" placeholder="e.g. 3"></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Extract Page',async()=>{
+    if(!CF)return notify('Select a PDF','⚠️');const pn=parseInt(document.getElementById('spn').value);if(!pn)return notify('Enter page number','⚠️');
+    setP(pw,20,'Loading...');
+    try{const pdf=await pdfjsLib.getDocument(await CF.arrayBuffer()).promise;
+      if(pn>pdf.numPages)return notify('Page '+pn+' does not exist. Total: '+pdf.numPages,'⚠️');
+      const{jsPDF}=window.jspdf;const doc=new jsPDF();const pg=await pdf.getPage(pn);const vp=pg.getViewport({scale:1.5});
+      const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;setP(pw,60,'Rendering...');
+      await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+      doc.addImage(cv.toDataURL('image/jpeg',.92),'JPEG',10,10,190,190*vp.height/vp.width);
+      setP(pw,100,'Done!');showR(rw,'Page '+pn+' extracted as new PDF',doc.output('blob'),'page_'+pn+'.pdf');notify('Page extracted!');
+    }catch(e){notify('Error: '+e.message,'❌');}
+  }));body.appendChild(pw);body.appendChild(rw);
 }
 
-function wordcount(body) {
-  const lbl=document.createElement('div'); lbl.innerHTML='<div class="field-lbl" style="margin-bottom:6px">Paste Your Text</div>';
-  body.appendChild(lbl);
-  const ta=document.createElement('textarea'); ta.placeholder='Start typing or paste a document here...'; ta.style.minHeight='130px';
-  const row=document.createElement('div'); row.className='stats-row';
+function pdfpassword(body){
+  body.appendChild(mkDZ('.pdf',false,'Select PDF to add watermark',f=>{CF=f[0]}));
+  body.appendChild(Object.assign(document.createElement('div'),{className:'note-box',textContent:'⚠️ This adds a visible watermark to each page as a protection indicator.'}));
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt" style="flex:2"><div class="opt-label">Watermark Text</div><input class="oi" id="wmt" placeholder="CONFIDENTIAL / DO NOT COPY"></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Add Watermark to PDF',async()=>{
+    if(!CF)return notify('Select a PDF','⚠️');const wm=document.getElementById('wmt').value||'CONFIDENTIAL';
+    setP(pw,10,'Loading...');
+    try{const pdf=await pdfjsLib.getDocument(await CF.arrayBuffer()).promise;const{jsPDF}=window.jspdf;const doc=new jsPDF();
+      for(let i=1;i<=pdf.numPages;i++){setP(pw,10+(i/pdf.numPages)*85,'Page '+i+'/'+pdf.numPages+'...');
+        const pg=await pdf.getPage(i);const vp=pg.getViewport({scale:1.5});
+        const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+        await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+        if(i>1)doc.addPage();doc.addImage(cv.toDataURL('image/jpeg',.9),'JPEG',10,10,190,190*vp.height/vp.width);
+        doc.setFontSize(36).setTextColor(210,210,210);doc.text(wm,105,148,{angle:45,align:'center'});}
+      setP(pw,100,'Done!');showR(rw,'Watermark "'+wm+'" added to '+pdf.numPages+' pages',doc.output('blob'),'watermarked.pdf');notify('Watermark added!');
+    }catch(e){notify('Error: '+e.message,'❌');}
+  }));body.appendChild(pw);body.appendChild(rw);
+}
+
+/* ═══════════════ IMAGE TOOLS ═══════════════ */
+function imgcompress(body){
+  body.appendChild(mkDZ('.jpg,.jpeg,.png,.webp',false,'Image to compress',f=>{CF=f[0]}));
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt"><div class="opt-label">Level</div><select id="icl"><option value="0.92">Light — 92%</option><option value="0.75" selected>Medium — 75%</option><option value="0.55">Heavy — 55%</option><option value="0.35">Max — 35%</option></select></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Compress Image',()=>{
+    if(!CF)return notify('Select an image','⚠️');const q=parseFloat(document.getElementById('icl').value);setP(pw,40,'Compressing...');
+    const img=new Image();img.src=URL.createObjectURL(CF);
+    img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').drawImage(img,0,0);
+      c.toBlob(blob=>{setP(pw,100,'Done!');const sv=Math.max(0,((CF.size-blob.size)/CF.size*100).toFixed(0));
+        showR(rw,'Saved '+sv+'% — '+fs(CF.size)+' → '+fs(blob.size),blob,'compressed.jpg');notify('Saved '+sv+'%!');},'image/jpeg',q);};
+  }));body.appendChild(pw);body.appendChild(rw);
+}
+
+function imgresize(body){
+  body.appendChild(mkDZ('.jpg,.jpeg,.png,.webp',false,'Image to resize',f=>{CF=f[0]}));
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt"><div class="opt-label">Width (px)</div><input class="oi" id="rw" type="number" placeholder="e.g. 1280"></div><div class="opt"><div class="opt-label">Height (px)</div><input class="oi" id="rh" type="number" placeholder="Auto-calculate"></div><div class="opt"><div class="opt-label">Format</div><select id="rf"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option></select></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Resize Image',()=>{
+    if(!CF)return notify('Select an image','⚠️');const tw=parseInt(document.getElementById('rw').value);if(!tw)return notify('Enter width','⚠️');
+    const fmt=document.getElementById('rf').value;const ext=fmt.split('/')[1];setP(pw,30,'Loading...');
+    const img=new Image();img.src=URL.createObjectURL(CF);
+    img.onload=()=>{const th=parseInt(document.getElementById('rh').value)||Math.round(tw*(img.height/img.width));
+      const c=document.createElement('canvas');c.width=tw;c.height=th;c.getContext('2d').drawImage(img,0,0,tw,th);
+      c.toBlob(b=>{setP(pw,100,'Done!');showR(rw,'Resized to '+tw+'×'+th+'px',b,'resized_'+tw+'x'+th+'.'+ext);notify('Resized!');},fmt,.95);};
+  }));body.appendChild(pw);body.appendChild(rw);
+}
+
+function img2img(body){
+  body.appendChild(mkDZ('.jpg,.jpeg,.png,.webp,.gif',false,'Image to convert',f=>{CF=f[0]}));
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt"><div class="opt-label">Output Format</div><select id="iif"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></div><div class="opt"><div class="opt-label">Quality</div><select id="iiq"><option value="0.95">95% Best</option><option value="0.85">85% High</option><option value="0.7">70% Medium</option><option value="0.5">50% Low</option></select></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Convert Image',()=>{
+    if(!CF)return notify('Select an image','⚠️');const fmt=document.getElementById('iif').value;const q=parseFloat(document.getElementById('iiq').value);const ext=fmt.split('/')[1];
+    setP(pw,30,'Loading...');const img=new Image();img.src=URL.createObjectURL(CF);
+    img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').drawImage(img,0,0);
+      c.toBlob(b=>{setP(pw,100,'Done!');showR(rw,'Converted to '+ext.toUpperCase()+' ('+fs(b.size)+')',b,'converted.'+ext);notify('Done!');},fmt,q);};
+  }));body.appendChild(pw);body.appendChild(rw);
+}
+
+function imgbg(body){
+  body.appendChild(mkDZ('.jpg,.jpeg,.png,.webp',false,'Image for background removal',f=>{CF=f[0]}));
+  body.appendChild(Object.assign(document.createElement('div'),{className:'note-blue',textContent:'ℹ️ Browser-based BG removal works best on images with solid/simple backgrounds.'}));
+  const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Remove Background',()=>{
+    if(!CF)return notify('Select an image','⚠️');setP(pw,30,'Processing...');
+    const img=new Image();img.src=URL.createObjectURL(CF);
+    img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const ctx=c.getContext('2d');ctx.drawImage(img,0,0);
+      const id=ctx.getImageData(0,0,c.width,c.height);const d=id.data;
+      const tr=d[0],tg=d[1],tb=d[2],thr=60;
+      for(let i=0;i<d.length;i+=4){if(Math.abs(d[i]-tr)<thr&&Math.abs(d[i+1]-tg)<thr&&Math.abs(d[i+2]-tb)<thr)d[i+3]=0;}
+      ctx.putImageData(id,0,0);setP(pw,90,'Saving...');
+      c.toBlob(b=>{setP(pw,100,'Done!');showR(rw,'Background removed — PNG with transparency',b,'nobg.png');notify('BG removed!');},'image/png');};
+  }));body.appendChild(pw);body.appendChild(rw);
+}
+
+function imggrayscale(body){
+  body.appendChild(mkDZ('.jpg,.jpeg,.png,.webp',false,'Image to convert to grayscale',f=>{CF=f[0]}));
+  const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Apply Grayscale Filter',()=>{
+    if(!CF)return notify('Select an image','⚠️');setP(pw,40,'Applying filter...');
+    const img=new Image();img.src=URL.createObjectURL(CF);
+    img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const ctx=c.getContext('2d');ctx.drawImage(img,0,0);
+      const id=ctx.getImageData(0,0,c.width,c.height);const d=id.data;
+      for(let i=0;i<d.length;i+=4){const g=d[i]*.299+d[i+1]*.587+d[i+2]*.114;d[i]=d[i+1]=d[i+2]=g;}
+      ctx.putImageData(id,0,0);setP(pw,90,'Saving...');
+      c.toBlob(b=>{setP(pw,100,'Done!');showR(rw,'Grayscale filter applied',b,'grayscale.jpg');notify('Done!');},'image/jpeg',.95);};
+  }));body.appendChild(pw);body.appendChild(rw);
+}
+
+function imgrotate(body){
+  body.appendChild(mkDZ('.jpg,.jpeg,.png,.webp',false,'Image to rotate or flip',f=>{CF=f[0]}));
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt"><div class="opt-label">Action</div><select id="ra"><option value="90">Rotate 90° CW</option><option value="180">Rotate 180°</option><option value="-90">Rotate 90° CCW</option><option value="fh">Flip Horizontal</option><option value="fv">Flip Vertical</option></select></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Apply Rotation',()=>{
+    if(!CF)return notify('Select an image','⚠️');const ac=document.getElementById('ra').value;setP(pw,40,'Applying...');
+    const img=new Image();img.src=URL.createObjectURL(CF);
+    img.onload=()=>{const c=document.createElement('canvas');const ctx=c.getContext('2d');
+      if(ac==='fh'||ac==='fv'){c.width=img.width;c.height=img.height;if(ac==='fh'){ctx.translate(c.width,0);ctx.scale(-1,1);}else{ctx.translate(0,c.height);ctx.scale(1,-1);}ctx.drawImage(img,0,0);}
+      else{const r=parseInt(ac);const sw=r===90||r===-90;c.width=sw?img.height:img.width;c.height=sw?img.width:img.height;ctx.translate(c.width/2,c.height/2);ctx.rotate(r*Math.PI/180);ctx.drawImage(img,-img.width/2,-img.height/2);}
+      c.toBlob(b=>{setP(pw,100,'Done!');showR(rw,'Image rotated/flipped',b,'rotated.jpg');notify('Done!');},'image/jpeg',.95);};
+  }));body.appendChild(pw);body.appendChild(rw);
+}
+
+function imgwatermark(body){
+  body.appendChild(mkDZ('.jpg,.jpeg,.png,.webp',false,'Image to add watermark on',f=>{CF=f[0]}));
+  const o=document.createElement('div');o.className='opts';
+  o.innerHTML='<div class="opt" style="flex:2"><div class="opt-label">Watermark Text</div><input class="oi" id="iwt" placeholder="© Your Name 2025"></div><div class="opt"><div class="opt-label">Opacity</div><select id="iwo"><option value="0.3">30% Light</option><option value="0.5" selected>50% Medium</option><option value="0.8">80% Heavy</option></select></div>';
+  body.appendChild(o);const pw=mkPg(),rw=mkRs();
+  body.appendChild(mkBtn('Add Watermark',()=>{
+    if(!CF)return notify('Select an image','⚠️');const wm=document.getElementById('iwt').value||'DocumentChanger.com';const op=parseFloat(document.getElementById('iwo').value);setP(pw,40,'Applying...');
+    const img=new Image();img.src=URL.createObjectURL(CF);
+    img.onload=()=>{const c=document.createElement('canvas');c.width=img.width;c.height=img.height;const ctx=c.getContext('2d');ctx.drawImage(img,0,0);
+      ctx.globalAlpha=op;ctx.fillStyle='white';ctx.font='bold '+Math.max(20,img.width/25)+'px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.translate(c.width/2,c.height/2);ctx.rotate(-30*Math.PI/180);ctx.fillText(wm,0,0);
+      c.toBlob(b=>{setP(pw,100,'Done!');showR(rw,'Watermark added',b,'watermarked.jpg');notify('Done!');},'image/jpeg',.93);};
+  }));body.appendChild(pw);body.appendChild(rw);
+}
+
+/* ═══════════════ TEXT TOOLS ═══════════════ */
+function caseconv(body){
+  const l=document.createElement('div');l.innerHTML='<div class="flbl" style="margin-bottom:5px">Input Text</div>';body.appendChild(l);
+  const ta=document.createElement('textarea');ta.placeholder='Paste your text here...';ta.style.minHeight='90px';body.appendChild(ta);
+  const pl=document.createElement('div');pl.className='pills';
+  const cases=[['UPPERCASE','u'],['lowercase','l'],['Title Case','t'],['Sentence case','s'],['camelCase','c'],['snake_case','sn'],['kebab-case','k']];
+  const out=document.createElement('div');out.style.display='none';
+  out.innerHTML='<div class="divider"></div><div class="flbl" style="margin-bottom:5px">Result</div><textarea class="out-ta" id="co" style="min-height:80px" readonly></textarea><div class="copy-row"><button class="cpbtn" id="cocp">📋 Copy</button></div>';
+  cases.forEach(([nm,k])=>{
+    const p=document.createElement('div');p.className='pill';p.textContent=nm;
+    p.onclick=()=>{
+      document.querySelectorAll('.pill').forEach(x=>x.classList.remove('on'));p.classList.add('on');
+      const t=ta.value;let r=t;
+      if(k==='u')r=t.toUpperCase();else if(k==='l')r=t.toLowerCase();
+      else if(k==='t')r=t.replace(/\w\S*/g,w=>w[0].toUpperCase()+w.slice(1).toLowerCase());
+      else if(k==='s')r=t.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g,c=>c.toUpperCase());
+      else if(k==='c')r=t.toLowerCase().replace(/[^a-z0-9]+(\w)/g,(_,c)=>c.toUpperCase());
+      else if(k==='sn')r=t.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+      else if(k==='k')r=t.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+      out.style.display='block';document.getElementById('co').value=r;
+      document.getElementById('cocp').onclick=()=>{navigator.clipboard.writeText(r);notify('Copied!','📋')};
+    };pl.appendChild(p);
+  });body.appendChild(pl);body.appendChild(out);
+}
+
+function wordcount(body){
+  const l=document.createElement('div');l.innerHTML='<div class="flbl" style="margin-bottom:5px">Paste Your Text</div>';body.appendChild(l);
+  const ta=document.createElement('textarea');ta.placeholder='Start typing or paste text here...';ta.style.minHeight='120px';body.appendChild(ta);
+  const g=document.createElement('div');g.className='wc-grid';
   const keys=['Words','Characters','No Spaces','Paragraphs','Sentences','Read Time'];
-  keys.forEach(k=>{
-    const d=document.createElement('div'); d.className='stat-card';
-    d.innerHTML=`<div class="stat-val" id="sv_${k.replace(' ','_')}">0</div><div class="stat-key">${k}</div>`;
-    row.appendChild(d);
-  });
-  ta.oninput=()=>{
-    const t=ta.value;
-    const w=t.trim()?t.trim().split(/\s+/).length:0;
-    const rt=Math.max(1,Math.round(w/200))+'m';
-    document.getElementById('sv_Words').textContent=w;
-    document.getElementById('sv_Characters').textContent=t.length;
-    document.getElementById('sv_No_Spaces').textContent=t.replace(/\s/g,'').length;
-    document.getElementById('sv_Paragraphs').textContent=t.trim()?t.trim().split(/\n\s*\n/).length:0;
-    document.getElementById('sv_Sentences').textContent=(t.match(/[.!?]+/g)||[]).length;
-    document.getElementById('sv_Read_Time').textContent=rt;
-  };
-  body.appendChild(ta); body.appendChild(row);
+  keys.forEach(k=>{const d=document.createElement('div');d.className='wc-card';d.innerHTML=`<div class="wc-val" id="wc_${k.replace(' ','_')}">0</div><div class="wc-key">${k}</div>`;g.appendChild(d);});
+  body.appendChild(g);
+  ta.oninput=()=>{const t=ta.value;const w=t.trim()?t.trim().split(/\s+/).length:0;const rt=Math.max(1,Math.round(w/200));
+    document.getElementById('wc_Words').textContent=w;
+    document.getElementById('wc_Characters').textContent=t.length;
+    document.getElementById('wc_No_Spaces').textContent=t.replace(/\s/g,'').length;
+    document.getElementById('wc_Paragraphs').textContent=t.trim()?t.trim().split(/\n\s*\n/).length:0;
+    document.getElementById('wc_Sentences').textContent=(t.match(/[.!?]+/g)||[]).length;
+    document.getElementById('wc_Read_Time').textContent=rt+'m';};
 }
 
-function base64(body) {
-  let mode='encode';
-  const modeRow=document.createElement('div'); modeRow.className='action-row';
-  const encBtn=document.createElement('button'); encBtn.className='ac-btn active'; encBtn.textContent='Encode → Base64';
-  const decBtn=document.createElement('button'); decBtn.className='ac-btn'; decBtn.textContent='Decode ← Base64';
-  encBtn.onclick=()=>{mode='encode';encBtn.classList.add('active');decBtn.classList.remove('active');};
-  decBtn.onclick=()=>{mode='decode';decBtn.classList.add('active');encBtn.classList.remove('active');};
-  modeRow.appendChild(encBtn); modeRow.appendChild(decBtn); body.appendChild(modeRow);
-  const lbl=document.createElement('div'); lbl.innerHTML='<div class="field-lbl" style="margin:1rem 0 6px">Input</div>';
-  body.appendChild(lbl);
-  const ta=document.createElement('textarea'); ta.placeholder='Paste text here...'; ta.style.minHeight='100px'; body.appendChild(ta);
-  const outWrap=document.createElement('div'); outWrap.style.display='none';
-  outWrap.innerHTML='<div class="field-lbl" style="margin:1rem 0 6px">Output</div><textarea class="out" id="b64_out" style="min-height:100px" readonly></textarea><button class="copy-btn" id="b64_cp">📋 Copy</button>';
-  body.appendChild(makeCvtBtn('⚡ Convert', ()=>{
-    if(!ta.value.trim()) return toast('Enter text','⚠️');
-    try {
-      const r=mode==='encode'?btoa(unescape(encodeURIComponent(ta.value))):decodeURIComponent(escape(atob(ta.value)));
-      outWrap.style.display='block'; document.getElementById('b64_out').value=r;
-      document.getElementById('b64_cp').onclick=()=>{navigator.clipboard.writeText(r);toast('Copied!','📋');};
-      toast(mode==='encode'?'Encoded!':'Decoded!');
-    } catch(e){toast('Invalid input for decoding','❌');}
-  }));
-  body.appendChild(outWrap);
+function base64(body){
+  let mode='enc';
+  const pr=document.createElement('div');pr.className='pills';
+  const eb=document.createElement('div');eb.className='pill on';eb.textContent='Encode → Base64';
+  const db=document.createElement('div');db.className='pill';db.textContent='Decode ← Base64';
+  eb.onclick=()=>{mode='enc';eb.classList.add('on');db.classList.remove('on')};
+  db.onclick=()=>{mode='dec';db.classList.add('on');eb.classList.remove('on')};
+  pr.appendChild(eb);pr.appendChild(db);body.appendChild(pr);
+  const l=document.createElement('div');l.innerHTML='<div class="flbl" style="margin:12px 0 5px">Input</div>';body.appendChild(l);
+  const ta=document.createElement('textarea');ta.placeholder='Paste text here...';ta.style.minHeight='90px';body.appendChild(ta);
+  const out=document.createElement('div');out.style.display='none';
+  out.innerHTML='<div class="divider"></div><div class="flbl" style="margin-bottom:5px">Output</div><textarea class="out-ta" id="b64o" style="min-height:90px" readonly></textarea><div class="copy-row"><button class="cpbtn" id="b64cp">📋 Copy</button></div>';
+  body.appendChild(mkBtn('⚡ Convert',()=>{
+    if(!ta.value.trim())return notify('Enter text first','⚠️');
+    try{const r=mode==='enc'?btoa(unescape(encodeURIComponent(ta.value))):decodeURIComponent(escape(atob(ta.value)));
+      out.style.display='block';document.getElementById('b64o').value=r;
+      document.getElementById('b64cp').onclick=()=>{navigator.clipboard.writeText(r);notify('Copied!','📋')};
+      notify(mode==='enc'?'Encoded!':'Decoded!');
+    }catch(e){notify('Invalid input for decoding','❌');}
+  }));body.appendChild(out);
 }
 
-function textdiff(body) {
-  const row=document.createElement('div'); row.className='two-col';
-  row.innerHTML=`<div><div class="field-lbl" style="margin-bottom:6px">Original</div>
-    <textarea id="da" style="min-height:130px" placeholder="Paste original text..."></textarea></div>
-    <div><div class="field-lbl" style="margin-bottom:6px">Modified</div>
-    <textarea id="db" style="min-height:130px" placeholder="Paste modified text..."></textarea></div>`;
-  body.appendChild(row);
-  const out=document.createElement('div'); out.id='diff_out'; out.style.display='none';
-  out.style.cssText='margin-top:1rem;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1rem;font-family:monospace;font-size:.8rem;line-height:1.9;max-height:240px;overflow:auto';
-  body.appendChild(makeCvtBtn('🔍 Compare Texts', ()=>{
-    const a=document.getElementById('da').value.split('\n');
-    const b=document.getElementById('db').value.split('\n');
-    out.style.display='block'; let html=''; const ml=Math.max(a.length,b.length);
+function textdiff(body){
+  const g=document.createElement('div');g.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:10px';
+  g.innerHTML='<div><div class="flbl" style="margin-bottom:5px">Original Text</div><textarea id="da" style="min-height:120px" placeholder="Paste original..."></textarea></div><div><div class="flbl" style="margin-bottom:5px">Modified Text</div><textarea id="db" style="min-height:120px" placeholder="Paste modified..."></textarea></div>';
+  body.appendChild(g);
+  const out=document.createElement('div');out.id='dout';out.style.cssText='display:none;margin-top:12px;background:#f8f9fb;border:1px solid var(--bdr2);border-radius:9px;padding:12px;font-size:.8rem;font-family:monospace;line-height:1.9;max-height:220px;overflow:auto';
+  body.appendChild(mkBtn('🔍 Compare Texts',()=>{
+    const a=document.getElementById('da').value.split('\n');const b=document.getElementById('db').value.split('\n');
+    out.style.display='block';let html='';const ml=Math.max(a.length,b.length);
     const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    for(let i=0;i<ml;i++){
-      const la=a[i]??'',lb=b[i]??'';
-      if(la===lb)html+=`<div style="color:var(--text2)">&nbsp;${esc(la)}</div>`;
-      else{
-        if(la)html+=`<div style="background:rgba(255,62,92,.1);border-left:3px solid var(--danger);padding-left:8px;color:#ff7070;margin:1px 0">− ${esc(la)}</div>`;
-        if(lb)html+=`<div style="background:rgba(0,229,176,.07);border-left:3px solid var(--success);padding-left:8px;color:var(--success);margin:1px 0">+ ${esc(lb)}</div>`;
-      }
+    for(let i=0;i<ml;i++){const la=a[i]??'',lb=b[i]??'';
+      if(la===lb)html+=`<div style="color:var(--txt2)"> ${esc(la)}</div>`;
+      else{if(la)html+=`<div style="background:#fef2f2;border-left:3px solid #E8192C;padding-left:8px;color:#b91c1c;margin:1px 0">− ${esc(la)}</div>`;
+        if(lb)html+=`<div style="background:#f0fdf4;border-left:3px solid #16a34a;padding-left:8px;color:#16a34a;margin:1px 0">+ ${esc(lb)}</div>`;}
     }
-    out.innerHTML=html||'<div style="color:var(--text3);text-align:center;padding:1rem">✅ Texts are identical — no differences found!</div>';
-    toast('Comparison done!');
-  }));
-  body.appendChild(out);
+    out.innerHTML=html||'<div style="color:var(--txt3);text-align:center;padding:12px">✅ Texts are identical!</div>';
+    notify('Comparison done!');
+  }));body.appendChild(out);
 }
 
-function jsonformat(body) {
+function jsonformat(body){
   let compact=false;
-  const modeRow=document.createElement('div'); modeRow.className='action-row';
-  const prBtn=document.createElement('button'); prBtn.className='ac-btn active'; prBtn.textContent='✨ Prettify';
-  const mnBtn=document.createElement('button'); mnBtn.className='ac-btn'; mnBtn.textContent='📦 Minify';
-  prBtn.onclick=()=>{compact=false;prBtn.classList.add('active');mnBtn.classList.remove('active');};
-  mnBtn.onclick=()=>{compact=true;mnBtn.classList.add('active');prBtn.classList.remove('active');};
-  modeRow.appendChild(prBtn); modeRow.appendChild(mnBtn); body.appendChild(modeRow);
-  const lbl=document.createElement('div'); lbl.innerHTML='<div class="field-lbl" style="margin:1rem 0 6px">Paste JSON</div>';
-  body.appendChild(lbl);
-  const ta=document.createElement('textarea'); ta.placeholder='{"key":"value","items":[1,2,3]}'; ta.style.minHeight='120px'; body.appendChild(ta);
-  const outWrap=document.createElement('div'); outWrap.style.display='none';
-  outWrap.innerHTML='<div class="field-lbl" style="margin:1rem 0 6px">Output</div><textarea class="out" id="js_out" style="min-height:120px;font-family:monospace;font-size:.82rem" readonly></textarea><button class="copy-btn" id="js_cp">📋 Copy</button>';
-  body.appendChild(makeCvtBtn('⚡ Format JSON', ()=>{
-    try {
-      const parsed=JSON.parse(ta.value);
-      const r=compact?JSON.stringify(parsed):JSON.stringify(parsed,null,2);
-      outWrap.style.display='block'; document.getElementById('js_out').value=r;
-      document.getElementById('js_cp').onclick=()=>{navigator.clipboard.writeText(r);toast('Copied!','📋');};
-      toast(compact?'Minified!':'Prettified!');
-    } catch(e){toast('Invalid JSON: '+e.message,'❌');}
-  }));
-  body.appendChild(outWrap);
+  const pr=document.createElement('div');pr.className='pills';
+  const pb=document.createElement('div');pb.className='pill on';pb.textContent='✨ Prettify';
+  const mb=document.createElement('div');mb.className='pill';mb.textContent='📦 Minify';
+  pb.onclick=()=>{compact=false;pb.classList.add('on');mb.classList.remove('on')};
+  mb.onclick=()=>{compact=true;mb.classList.add('on');pb.classList.remove('on')};
+  pr.appendChild(pb);pr.appendChild(mb);body.appendChild(pr);
+  const l=document.createElement('div');l.innerHTML='<div class="flbl" style="margin:12px 0 5px">Paste JSON</div>';body.appendChild(l);
+  const ta=document.createElement('textarea');ta.placeholder='{"key":"value","items":[1,2,3]}';ta.style.minHeight='110px';ta.style.fontFamily='monospace';body.appendChild(ta);
+  const out=document.createElement('div');out.style.display='none';
+  out.innerHTML='<div class="divider"></div><div class="flbl" style="margin-bottom:5px">Output</div><textarea class="out-ta" id="jso" style="min-height:110px;font-family:monospace;font-size:.8rem" readonly></textarea><div class="copy-row"><button class="cpbtn" id="jsocp">📋 Copy</button></div>';
+  body.appendChild(mkBtn('⚡ Format JSON',()=>{
+    try{const parsed=JSON.parse(ta.value);const r=compact?JSON.stringify(parsed):JSON.stringify(parsed,null,2);
+      out.style.display='block';document.getElementById('jso').value=r;
+      document.getElementById('jsocp').onclick=()=>{navigator.clipboard.writeText(r);notify('Copied!','📋')};
+      notify(compact?'Minified!':'Prettified!');
+    }catch(e){notify('Invalid JSON: '+e.message,'❌');}
+  }));body.appendChild(out);
 }
 
-/* SCROLL ANIMATION */
-const obs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}});
-},{threshold:.1});
-document.querySelectorAll('.tool-card').forEach((c,i)=>{
-  c.style.cssText+='opacity:0;transform:translateY(20px);transition:opacity .5s '+i*.06+'s,transform .5s '+i*.06+'s,border-color .25s,box-shadow .25s,background .25s';
-  obs.observe(c);
-});
+/* ── RESUME ── */
+function showBuilder(){
+  document.getElementById('builder-sec').style.display='block';
+  document.getElementById('builder-sec').scrollIntoView({behavior:'smooth'});
+}
+function addExp(){
+  const con=document.getElementById('exp-con');
+  const d=document.createElement('div');d.className='exp-it';d.style.marginTop='14px';d.style.paddingTop='14px';d.style.borderTop='1px solid var(--bdr2)';
+  d.innerHTML='<div class="frow"><div><div class="flb">Company</div><input class="finp exp-co" placeholder="Company Name"></div><div><div class="flb">Role</div><input class="finp exp-ro" placeholder="Your Role"></div></div><div class="frow"><div><div class="flb">From</div><input class="finp exp-fr" placeholder="Month Year"></div><div><div class="flb">To</div><input class="finp exp-to" placeholder="Present"></div></div><div class="flb">Key Achievements</div><textarea class="fta exp-ds" placeholder="• Achievement 1&#10;• Achievement 2"></textarea>';
+  con.appendChild(d);
+}
+function generateResume(){
+  const n=document.getElementById('rn').value;if(!n.trim())return notify('Enter your name','⚠️');
+  const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});
+  const ml=20,mr=190,cw=170;
+  // Header
+  doc.setFillColor(26,26,62);doc.rect(0,0,210,42,'F');
+  doc.setFontSize(22).setFont('helvetica','bold').setTextColor(255,255,255);doc.text(n||'Your Name',ml,17);
+  doc.setFontSize(12).setFont('helvetica','normal').setTextColor(200,200,220);
+  doc.text(document.getElementById('rt').value||'',ml,26);
+  const contact=[document.getElementById('re').value,document.getElementById('rp').value,document.getElementById('rc').value,document.getElementById('rl').value].filter(Boolean).join(' | ');
+  doc.setFontSize(8.5).setTextColor(170,170,200);doc.text(contact,ml,34);
+  let y=52;
+  const sec=(title,color=[26,26,62])=>{doc.setFontSize(10).setFont('helvetica','bold').setTextColor(...color);doc.text(title,ml,y);doc.setDrawColor(232,25,44);doc.setLineWidth(0.5);doc.line(ml,y+1.5,mr,y+1.5);y+=8;};
+  const body=(txt,indent=0)=>{doc.setFontSize(9.5).setFont('helvetica','normal').setTextColor(50,50,50);const ls=doc.splitTextToSize(txt,cw-indent);ls.forEach(l=>{if(y>278){doc.addPage();y=18;}doc.text(l,ml+indent,y);y+=5.2;});};
+  // Summary
+  const s=document.getElementById('rs').value;
+  if(s){sec('PROFESSIONAL SUMMARY');body(s);y+=3;}
+  // Experience
+  const exps=document.querySelectorAll('.exp-it');let hasExp=false;
+  exps.forEach(e=>{const co=e.querySelector('.exp-co').value,ro=e.querySelector('.exp-ro').value;if(!co)return;if(!hasExp){sec('WORK EXPERIENCE');hasExp=true;}
+    doc.setFontSize(10).setFont('helvetica','bold').setTextColor(30,30,60);doc.text(ro,ml,y);
+    doc.setFontSize(9).setFont('helvetica','italic').setTextColor(100,100,120);
+    doc.text(co+' · '+e.querySelector('.exp-fr').value+' – '+e.querySelector('.exp-to').value,ml,y+5);y+=11;
+    body(e.querySelector('.exp-ds').value,2);y+=2;});
+  if(hasExp)y+=2;
+  // Education
+  const d=document.getElementById('rd').value,u=document.getElementById('ru').value;
+  if(d){sec('EDUCATION');doc.setFontSize(10).setFont('helvetica','bold').setTextColor(30,30,60);doc.text(d,ml,y);
+    doc.setFontSize(9).setFont('helvetica','normal').setTextColor(80,80,100);
+    doc.text(u+' | '+document.getElementById('ry').value+' | '+document.getElementById('rg').value,ml,y+5);y+=13;}
+  // Skills
+  const sk=document.getElementById('rsk').value;
+  if(sk){sec('SKILLS');body(sk);}
+  const blob=doc.output('blob');const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(n||'resume').replace(/\s+/g,'_')+'.pdf';a.click();
+  notify('Resume downloaded!','📄');
+}
+
+/* ── CONTACT FORM ── */
+function sendContact(){
+  const n=document.getElementById('cn').value,e=document.getElementById('ce').value,m=document.getElementById('cm').value;
+  if(!n||!e||!m)return notify('Fill all fields','⚠️');
+  notify('Message sent! We will respond within 24 hours.','✅');
+}
+
+/* ── AI ASSISTANT ── */
+const KB={
+  'compress pdf':'To compress a PDF on DocumentChanger: 1. Click "PDF Tools" → "Compress PDF". 2. Upload your PDF file. 3. Choose compression level (Light/Medium/High). 4. Click "Compress PDF" and download. Our tool can reduce size by up to 70%!',
+  'jpg to pdf':'Convert JPG to PDF: Go to PDF Tools → JPG to PDF. Upload one or multiple images (JPG, PNG, WebP). Select page size and orientation. Click "Create PDF from Images". All images will be merged into a single PDF.',
+  'png jpg':'PNG vs JPG: JPG is best for photos (smaller file, slight quality loss). PNG is best for logos, screenshots, transparent images (larger file, no quality loss). Use JPG for web photos, PNG for graphics with text or transparency.',
+  'image size':'To reduce image size: Go to Image Tools → Image Compressor. Upload your image. Select compression level. Click Compress. You can reduce size by 50-70% while keeping good quality.',
+  'remove bg':'Remove Image Background: Image Tools → Remove Background. Upload your image. Click "Remove Background". Works best with solid/simple backgrounds. Download the PNG with transparent background.',
+  'resume':'To create a resume: Go to Resume Builder → Start Building. Fill in Personal Info, Summary, Work Experience, Education, and Skills. Click "Generate & Download PDF Resume". You can also choose from professional templates!',
+  'merge pdf':'Merge PDF files: PDF Tools → Merge PDF. Select 2 or more PDF files. Click "Merge PDFs". All files will be combined into one PDF in the order you selected them.',
+  'word pdf':'Convert Word to PDF: PDF Tools → Word to PDF. Upload your .docx file. Choose font size and page size. Click "Convert Word to PDF". The text formatting will be preserved.',
+  'pdf text':'Extract text from PDF: PDF Tools → PDF to Text. Upload your PDF. Click "Extract Text from PDF". You can copy the text or download it as a .txt file.',
+  'split pdf':'Split/Extract PDF pages: PDF Tools → Split PDF. Upload your PDF. Enter the page number you want to extract. Click "Extract Page" to get that page as a separate PDF.',
+};
+function getAIResponse(q){
+  const ql=q.toLowerCase();
+  for(const[k,v]of Object.entries(KB)){if(k.split(' ').some(w=>ql.includes(w)))return v;}
+  if(ql.includes('free'))return 'Yes! DocumentChanger is 100% free. No sign-up required. No file size limits. No watermarks. All tools process files locally in your browser, so your files are completely private.';
+  if(ql.includes('safe')||ql.includes('private'))return 'Your files are 100% private. All processing happens locally in your browser. Files are never uploaded to any server. We have no access to your documents.';
+  if(ql.includes('tool')||ql.includes('what'))return 'DocumentChanger offers: PDF tools (convert, compress, merge, split, watermark), Image tools (compress, resize, convert, remove background, grayscale, rotate, watermark), Document tools (Word to PDF, Text to PDF), Text utilities (Case converter, Word counter, Base64, JSON formatter, Text diff), and Resume Builder with PDF download.';
+  return 'I can help with PDF conversion, image editing, document tools, and resume building. Try asking about: "How to compress PDF?", "How to remove image background?", "How to make a resume?", or "What tools do you have?"';
+}
+function addMsg(text,isUser){
+  const msgs=document.getElementById('ai-msgs');
+  const d=document.createElement('div');d.className='amsg '+(isUser?'u':'b');
+  d.innerHTML=`<div class="amsg-av">${isUser?'👤':'🤖'}</div><div class="amsg-bubble">${text}</div>`;
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+}
+function qs(q){document.getElementById('ai-inp').value=q;sendAI();}
+function sendAI(){
+  const inp=document.getElementById('ai-inp');const q=inp.value.trim();if(!q)return;
+  addMsg(q,true);inp.value='';
+  const ty=document.getElementById('aityping');ty.classList.add('on');
+  setTimeout(()=>{ty.classList.remove('on');addMsg(getAIResponse(q),false);},1100);
+}
+
 </script>
 </body>
 </html>
